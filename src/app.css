@@ -88,21 +88,17 @@ body {
 
 /* Active algorithm highlighting */
 [role='treeitem'].active {
-	background-color: #eff6ff; /* blue-50 */
-	color: #2563eb; /* blue-600 */
-	border-left: 4px solid #2563eb;
-	font-weight: 500;
+	@apply bg-blue-50 text-blue-600 border-l-4 border-blue-600 font-medium;
 }
 
 /* Hover states */
 [role='treeitem']:hover:not(.active) {
-	background-color: #f3f4f6; /* gray-100 */
+	@apply bg-gray-100;
 }
 
 /* Focus states for accessibility */
 [role='treeitem']:focus {
-	outline: 2px solid #3b82f6; /* blue-500 */
-	outline-offset: -2px;
+	@apply outline-2 outline-blue-500 -outline-offset-2;
 }
 
 /* Expand/collapse icon animation */
