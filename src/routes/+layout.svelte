@@ -19,9 +19,16 @@
 	// Create NavigationState instance (persists across navigation)
 	const navState = new NavigationState();
 
+	// Track previous pathname to avoid infinite loops
+	let previousPathname = $state('');
+
 	// Sync active algorithm from URL pathname
 	$effect(() => {
 		const pathname = $page.url.pathname;
+
+		// Only update if pathname actually changed
+		if (pathname === previousPathname) return;
+		previousPathname = pathname;
 
 		// Extract algorithm ID from URL (format: /category/algorithm)
 		const pathParts = pathname.split('/').filter(Boolean);
@@ -48,11 +55,7 @@
 <Sidebar state={navState} tree={navigationTree} />
 
 <!-- Main content area -->
-<main
-	class="transition-all duration-200 ease-out
-		{navState.sidebarOpen ? 'md:ml-[220px] lg:ml-[280px]' : 'md:ml-0'}
-		min-h-screen"
->
+<main class="min-h-screen">
 	<slot />
 </main>
 

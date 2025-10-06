@@ -41,11 +41,13 @@ export class NavigationState {
 	 * @param nodeId - Category node ID to toggle
 	 */
 	toggle(nodeId: string): void {
-		if (this.expandedNodes.has(nodeId)) {
-			this.expandedNodes.delete(nodeId);
+		const newSet = new Set(this.expandedNodes);
+		if (newSet.has(nodeId)) {
+			newSet.delete(nodeId);
 		} else {
-			this.expandedNodes.add(nodeId);
+			newSet.add(nodeId);
 		}
+		this.expandedNodes = newSet;
 
 		this.persist();
 	}
@@ -56,7 +58,9 @@ export class NavigationState {
 	 * @param nodeId - Category node ID to expand
 	 */
 	expand(nodeId: string): void {
-		this.expandedNodes.add(nodeId);
+		const newSet = new Set(this.expandedNodes);
+		newSet.add(nodeId);
+		this.expandedNodes = newSet;
 		this.persist();
 	}
 
@@ -66,7 +70,9 @@ export class NavigationState {
 	 * @param nodeId - Category node ID to collapse
 	 */
 	collapse(nodeId: string): void {
-		this.expandedNodes.delete(nodeId);
+		const newSet = new Set(this.expandedNodes);
+		newSet.delete(nodeId);
+		this.expandedNodes = newSet;
 		this.persist();
 	}
 
@@ -79,9 +85,11 @@ export class NavigationState {
 	 * state.expandPath(['dynamic-programming', 'dp-2d-array']);
 	 */
 	expandPath(nodeIds: string[]): void {
+		const newSet = new Set(this.expandedNodes);
 		for (const nodeId of nodeIds) {
-			this.expandedNodes.add(nodeId);
+			newSet.add(nodeId);
 		}
+		this.expandedNodes = newSet;
 
 		this.persist();
 	}

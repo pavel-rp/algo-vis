@@ -10,13 +10,13 @@
 	 */
 
 	import type { NavigationNode } from '$lib/types/navigation';
+	import type { NavigationState } from '$lib/core/NavigationState.svelte';
 	import { isCategoryNode, isAlgorithmNode } from '$lib/types/navigation';
 
 	interface TreeNodeProps {
 		node: NavigationNode;
 		level?: number;
-		isExpanded: boolean;
-		isActive: boolean;
+		state: NavigationState;
 		onToggle: (nodeId: string) => void;
 		onSelect: (algorithmId: string) => void;
 	}
@@ -24,11 +24,13 @@
 	let {
 		node,
 		level = 0,
-		isExpanded,
-		isActive,
+		state,
 		onToggle,
 		onSelect
 	}: TreeNodeProps = $props();
+
+	const isExpanded = $derived(state.isExpanded(node.id));
+	const isActive = $derived(state.isActive(node.id));
 
 	const indentPx = level * 16;
 </script>
@@ -62,8 +64,7 @@
 					<svelte:self
 						node={childNode}
 						level={level + 1}
-						isExpanded={isExpanded}
-						isActive={isActive}
+						{state}
 						{onToggle}
 						{onSelect}
 					/>

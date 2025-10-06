@@ -34,8 +34,7 @@
 		<TreeNode
 			{node}
 			level={0}
-			isExpanded={state.isExpanded(node.id)}
-			isActive={state.isActive(node.id)}
+			{state}
 			onToggle={handleToggle}
 			onSelect={handleSelect}
 		/>

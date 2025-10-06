@@ -110,23 +110,18 @@
 
 			<!-- Status Panel -->
 			<div class="bg-white dark:bg-gray-800 rounded-lg shadow p-6">
-				<StatusPanel currentFrame={controller.currentFrame} />
+				<StatusPanel {controller} />
 			</div>
 		</div>
 
-		<!-- Playback Controls -->
-		<div class="bg-white dark:bg-gray-800 rounded-lg shadow p-6">
+	</div>
+
+	<!-- Controls - Sticky Footer -->
+	<div class="fixed bottom-0 left-0 right-0 bg-white dark:bg-gray-800 border-t border-gray-200 dark:border-gray-700 shadow-lg z-40">
+		<div class="max-w-7xl mx-auto p-4">
 			<div class="flex flex-col sm:flex-row items-center justify-between gap-4">
-				<PlaybackControls
-					isPlaying={controller.isPlaying}
-					canStep={!controller.isPlaying && controller.currentIndex < controller.trace.length - 1}
-					canReset={controller.currentIndex > 0}
-					onPlay={controller.play}
-					onPause={controller.pause}
-					onStep={controller.step}
-					onReset={controller.reset}
-				/>
-				<SpeedControl speed={controller.speed} onSpeedChange={controller.setSpeed} />
+				<PlaybackControls {controller} />
+				<SpeedControl {controller} />
 			</div>
 		</div>
 	</div>

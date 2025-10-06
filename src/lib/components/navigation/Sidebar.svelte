@@ -44,9 +44,8 @@
 
 <!-- Sidebar Container -->
 <aside
-	class="sidebar fixed top-0 left-0 h-screen bg-white border-r border-gray-200 z-50 transition-transform duration-200 ease-out
-		{state.sidebarOpen ? 'translate-x-0' : '-translate-x-full md:translate-x-0'}
-		w-[280px] md:w-[220px] lg:w-[280px]"
+	class="sidebar fixed top-0 left-0 h-screen bg-white border-r border-gray-200 z-50 transition-transform duration-200 ease-out w-[280px] md:w-[220px] lg:w-[280px]"
+	style="transform: translateX({state.sidebarOpen ? '0' : '-100%'});"
 	aria-hidden={!state.sidebarOpen}
 >
 	<!-- Sidebar Header -->
@@ -65,7 +64,16 @@
 	</div>
 </aside>
 
-<!-- Mobile Toggle Button (outside sidebar) -->
-<div class="md:hidden">
-	<SidebarToggle isOpen={state.sidebarOpen} onToggle={handleToggle} />
+<!-- Toggle Button (outside sidebar, always visible) -->
+<div class="fixed top-4 left-4 z-[60]" class:hidden={state.sidebarOpen}>
+	<button
+		type="button"
+		class="p-2 bg-white dark:bg-gray-800 rounded-lg shadow-lg hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors focus:outline-none focus:ring-2 focus:ring-blue-500"
+		aria-label="Open sidebar"
+		onclick={handleToggle}
+	>
+		<svg class="w-6 h-6 text-gray-600 dark:text-gray-300" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+			<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16" />
+		</svg>
+	</button>
 </div>

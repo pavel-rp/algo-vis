@@ -27,14 +27,17 @@ export {};
 
 declare module "$app/types" {
 	export interface AppTypes {
-		RouteId(): "/";
+		RouteId(): "/" | "/[category]" | "/[category]/[algorithm]";
 		RouteParams(): {
-			
+			"/[category]": { category: string };
+			"/[category]/[algorithm]": { category: string; algorithm: string }
 		};
 		LayoutParams(): {
-			"/": Record<string, never>
+			"/": { category?: string; algorithm?: string };
+			"/[category]": { category: string; algorithm?: string };
+			"/[category]/[algorithm]": { category: string; algorithm: string }
 		};
-		Pathname(): "/";
+		Pathname(): "/" | `/${string}` & {} | `/${string}/` & {} | `/${string}/${string}` & {} | `/${string}/${string}/` & {};
 		ResolvedPathname(): `${"" | `/${string}`}${ReturnType<AppTypes['Pathname']>}`;
 		Asset(): string & {};
 	}

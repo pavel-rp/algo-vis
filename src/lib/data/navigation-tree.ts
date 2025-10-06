@@ -56,7 +56,7 @@ export const navigationTree: NavigationTree = {
 							id: 'unique-paths-with-obstacles',
 							label: 'Unique Paths with Obstacles',
 							pluginId: 'unique-paths-with-obstacles',
-							path: '/graphs/unique-paths-obstacles'
+							path: '/graphs/unique-paths-with-obstacles'
 						}
 					]
 				}

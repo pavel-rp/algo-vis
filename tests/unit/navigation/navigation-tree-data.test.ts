@@ -245,7 +245,7 @@ describe('Navigation Tree Data Structure', () => {
 			expect(uniquePaths).toBeDefined();
 			expect(uniquePaths?.label).toBe('Unique Paths with Obstacles');
 			expect(uniquePaths?.pluginId).toBe('unique-paths-with-obstacles');
-			expect(uniquePaths?.path).toBe('/graphs/unique-paths-obstacles');
+			expect(uniquePaths?.path).toBe('/graphs/unique-paths-with-obstacles');
 		});
 	});
 
