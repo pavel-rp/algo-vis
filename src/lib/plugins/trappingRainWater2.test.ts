@@ -209,7 +209,7 @@ describe('trappingRainWater2Plugin', () => {
 			expect(trappingRainWater2Plugin.id).toBe('trapping-rain-water-2');
 			expect(trappingRainWater2Plugin.name).toBe('Trapping Rain Water II');
 			expect(trappingRainWater2Plugin.description).toBeTruthy();
-			expect(trappingRainWater2Plugin.category).toBe('Grid Algorithms');
+			expect(trappingRainWater2Plugin.category).toBe('Dynamic Programming');
 			expect(trappingRainWater2Plugin.visualizationType).toBe('grid');
 		});
 

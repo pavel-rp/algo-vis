@@ -177,7 +177,8 @@ export const uniquePathsWithObstaclesPlugin: AlgorithmPlugin<number[][], DPState
 	name: 'Unique Paths with Obstacles',
 	description:
 		'Given an m×n grid with obstacles, find the number of unique paths from the top-left to bottom-right corner. You can only move right or down. Uses dynamic programming with space optimization.',
-	category: 'Dynamic Programming',
+	category: 'Graphs',
+	subcategory: 'Path Finding',
 	visualizationType: 'grid',
 	presets: [
 		{
