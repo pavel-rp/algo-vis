@@ -1,1 +1,30 @@
+# Dependencies
 node_modules
+
+# Build output
+dist
+.svelte-kit
+build
+
+# Test coverage
+coverage
+*.lcov
+
+# Environment
+.env
+.env.*
+!.env.example
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Editor
+.vscode/*
+!.vscode/extensions.json
+.idea
+
+# Logs
+*.log
+npm-debug.log*
+pnpm-debug.log*
