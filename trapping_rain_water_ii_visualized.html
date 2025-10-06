@@ -1,0 +1,613 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>Trapping Rain Water II — Visualizer (with Status & Step Back & Focus)</title>
+<style>
+  :root{
+    --bg:#0f1220; --panel:#151933; --text:#e6e9ff; --muted:#98a2b3;
+    --accent:#6ea8fe; --accent-2:#22d3ee; --danger:#ef4444; --ok:#22c55e;
+    --grid-border:#2b2f55; --visited:#2a2f5c; --heap:#334155; --fill:#22d3ee55;
+  }
+  html,body {height:100%;}
+  body{
+    margin:0; background:linear-gradient(180deg,#0b0e1a 0%, #0f1220 60%, #0d1117 100%);
+    color:var(--text); font-family:ui-sans-serif, system-ui, -apple-system, Segoe UI, Roboto, "Helvetica Neue", Arial;
+    display:flex; align-items:stretch; justify-content:center;
+  }
+  .app{
+    display:grid; grid-template-columns: 360px minmax(420px, 1fr);
+    gap:16px; padding:16px; width:min(1280px, 98vw);
+  }
+  .card{
+    background:rgba(21,25,51,0.9); border:1px solid #22274a; border-radius:16px;
+    box-shadow: 0 10px 30px rgba(0,0,0,0.35); overflow:hidden;
+  }
+  .card h2{
+    margin:0; padding:14px 16px; font-size:16px; letter-spacing:0.2px;
+    background:linear-gradient(90deg, #14183a, #181d45); border-bottom:1px solid #232958;
+  }
+  .card .content{ padding:14px 16px; }
+
+  .controls{ display:grid; gap:10px; }
+  .row{ display:flex; gap:8px; align-items:center; flex-wrap:wrap; }
+  .row label{ color:var(--muted); font-size:12px; }
+  textarea{
+    width:100%; min-height:120px; resize:vertical; background:#0f142d; color:var(--text);
+    border:1px solid #283164; border-radius:12px; padding:10px; font-family:ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+  }
+  input[type="range"]{ width:160px; }
+
+  button{
+    background:linear-gradient(180deg,#2a63ff,#224fdd);
+    border:none; color:white; padding:8px 12px; border-radius:12px; cursor:pointer; font-weight:600;
+    transition:transform .04s ease, box-shadow .1s ease, opacity .2s ease;
+    box-shadow:0 6px 18px rgba(46,125,255,.35);
+  }
+  button.secondary{
+    background:#1e274d; border:1px solid #2f3b78; color:#dbe3ff; box-shadow:none;
+  }
+  button.warn{
+    background:linear-gradient(180deg,#ef4444,#dc2626);
+  }
+  button:active{ transform:translateY(1px); }
+  .btn-group{ display:flex; flex-wrap:wrap; gap:8px; }
+
+  .legend{ display:flex; flex-wrap:wrap; gap:12px; font-size:12px; color:var(--muted); }
+  .dot{ width:14px; height:14px; border-radius:4px; display:inline-block; margin-right:6px; vertical-align:middle; }
+  .lg-height{ background:linear-gradient(180deg,#334,#99a); }
+  .lg-visited{ background:var(--visited); }
+  .lg-boundary{ background:var(--heap); }
+  .lg-water{ background:var(--fill); border:1px dashed #22d3ee55; }
+
+  .grid-wrap{ padding:10px; }
+  .grid{
+    display:grid; gap:2px; background:var(--grid-border); border:1px solid var(--grid-border);
+    padding:2px; border-radius:12px; user-select:none;
+  }
+  .cell{
+    position:relative; min-width:32px; min-height:32px; border-radius:8px; overflow:hidden;
+    display:flex; align-items:center; justify-content:center;
+    font-size:12px; line-height:1; letter-spacing:.2px; font-weight:600;
+    background:linear-gradient(180deg,#1b1f3a, #232a52);
+    border:1px solid #212a55;
+  }
+  .cell .h{
+    position:absolute; inset:0; background:linear-gradient(180deg,#2a2f55,#55619a);
+    opacity:.85;
+  }
+  .cell .w{
+    position:absolute; inset:auto 0 0 0; height:0%;
+    background:var(--fill);
+    backdrop-filter: blur(0.5px);
+    transition:height .2s ease;
+  }
+  .cell .txt{
+    position:relative; z-index:2; color:#eef2ff; text-shadow:0 1px 2px rgba(0,0,0,.6);
+  }
+  .cell.visited::after{
+    content:""; position:absolute; inset:0; box-shadow: inset 0 0 0 2px #4f46e5aa; border-radius:8px;
+    background:linear-gradient(180deg, rgba(35,40,88,.15), rgba(35,40,88,.0));
+  }
+  .cell.boundary{
+    outline:2px solid #67e8f9aa;
+  }
+
+  /* NEW: focus highlights */
+  .cell.focus{
+    outline: 3px solid #f59e0bcc;           /* amber */
+    box-shadow: inset 0 0 0 2px #f59e0b66;
+  }
+  .cell.neighbor{
+    outline: 2px dashed #22c55eaa;          /* green */
+  }
+
+  .status{
+    display:flex; flex-wrap:wrap; gap:10px; font-size:12px; color:var(--muted);
+  }
+  .ok{ color:var(--ok); }
+
+  .queue{
+    display:flex; flex-wrap:wrap; gap:6px; margin-top:8px;
+    max-height:110px; overflow:auto; padding-right:2px;
+  }
+  .chip{
+    background:var(--heap); border:1px solid #2b345f; color:#cfe3ff; padding:4px 8px; border-radius:999px; font-size:12px;
+  }
+
+  /* Status window */
+  .status-window{
+    display:grid; gap:8px;
+  }
+  .status-current{
+    background:#0f142d; border:1px solid #283164; border-radius:12px; padding:10px;
+    font-size:13px; line-height:1.35;
+  }
+  .status-current .hdr{ font-weight:700; color:#cbd5ff; margin-bottom:6px; }
+  .status-log{
+    background:#0f142d; border:1px solid #283164; border-radius:12px; padding:10px;
+    max-height:160px; overflow:auto; font-family:ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+    font-size:12px; color:#c7d2fe;
+  }
+  .footer-note{ font-size:12px; color:var(--muted); margin-top:8px; }
+  .mono{ font-family:ui-monospace, SFMono-Regular, Menlo, Consolas, monospace; }
+</style>
+</head>
+<body>
+  <div class="app">
+    <!-- Left: Controls + Status -->
+    <div class="card">
+      <h2>Controls</h2>
+      <div class="content controls">
+        <div class="btn-group">
+          <button id="btnInit">Initialize</button>
+          <button id="btnStepBack" class="secondary">Step Back</button>
+          <button id="btnStep" class="secondary">Step</button>
+          <button id="btnPlay">Play</button>
+          <button id="btnPause" class="secondary">Pause</button>
+          <button id="btnReset" class="warn">Reset</button>
+        </div>
+        <div class="row">
+          <label>Speed</label>
+          <input id="speed" type="range" min="0" max="1000" step="50" value="350" />
+          <span id="speedVal" class="mono">350 ms</span>
+        </div>
+        <div class="row">
+          <label>Preset</label>
+          <select id="preset">
+            <option value="tiny">Tiny 3×3 bowl</option>
+            <option value="classic" selected>Classic 5×6 basin</option>
+            <option value="flat">Flat 4×6</option>
+            <option value="random">Random (seeded)</option>
+          </select>
+        </div>
+        <label>Height Map (JSON matrix)</label>
+        <textarea id="input"></textarea>
+
+        <div class="legend">
+          <div><span class="dot lg-height"></span>height</div>
+          <div><span class="dot lg-water"></span>water</div>
+          <div><span class="dot lg-visited"></span>visited</div>
+          <div><span class="dot lg-boundary"></span>in boundary (heap)</div>
+        </div>
+
+        <h2 style="margin-top:14px;">Status</h2>
+        <div class="content status-window">
+          <div class="status-current">
+            <div class="hdr">Current step</div>
+            <div id="statusNow">–</div>
+          </div>
+          <div>
+            <strong>Log (chronological):</strong>
+            <div id="statusLog" class="status-log"></div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Right: Visuals -->
+    <div class="card">
+      <h2>Grid & Algorithm State</h2>
+      <div class="content">
+        <div class="status">
+          <div>Rows: <span id="m" class="mono">–</span></div>
+          <div>Cols: <span id="n" class="mono">–</span></div>
+          <div>Total Water: <span id="total" class="mono ok">0</span></div>
+          <div>Current waterline (min boundary): <span id="waterline" class="mono">–</span></div>
+          <div>Step index: <span id="step" class="mono">0</span></div>
+          <div>Frames: <span id="frames" class="mono">0</span></div>
+        </div>
+        <div class="grid-wrap">
+          <div id="grid" class="grid"></div>
+        </div>
+        <div><strong>Boundary (Min-Heap top→bottom):</strong>
+          <div id="queue" class="queue"></div>
+        </div>
+        <div class="footer-note">
+          Algorithm: multi-source expansion from the boundary via a min-heap of <span class="mono">[r, c, boundaryHeight]</span>.
+          For neighbor <span class="mono">(nr,nc)</span> with height <span class="mono">nh</span> under waterline <span class="mono">bh</span>, water added is <span class="mono">max(0, bh - nh)</span>, then push <span class="mono">max(nh, bh)</span>.
+        </div>
+      </div>
+    </div>
+  </div>
+
+<script>
+/*** Minimal Priority Queue for tracing ***/
+class MinPriorityQueue {
+  constructor(keyFn){ this.a=[]; this.key=keyFn||((x)=>x); }
+  size(){ return this.a.length; }
+  isEmpty(){ return this.a.length===0; }
+  peek(){ return this.a[0]; }
+  enqueue(x){ this.a.push(x); this.#up(this.a.length-1); }
+  dequeue(){
+    if(this.a.length===0) return undefined;
+    const top=this.a[0], last=this.a.pop();
+    if(this.a.length){ this.a[0]=last; this.#down(0); }
+    return top;
+  }
+  #less(i,j){ return this.key(this.a[i]) < this.key(this.a[j]); }
+  #up(i){ while(i>0){ const p=(i-1)>>1; if(!this.#less(i,p)) break; [this.a[i],this.a[p]]=[this.a[p],this.a[i]]; i=p; } }
+  #down(i){
+    for(;;){
+      let l=i*2+1, r=l+1, s=i;
+      if(l<this.a.length && this.#less(l,s)) s=l;
+      if(r<this.a.length && this.#less(r,s)) s=r;
+      if(s===i) break;
+      [this.a[i],this.a[s]]=[this.a[s],this.a[i]];
+      i=s;
+    }
+  }
+  toSorted(){ return this.a.slice().sort((x,y)=> this.key(x) - this.key(y)); }
+}
+
+/*** Utilities ***/
+const dirs = [[0,1],[1,0],[0,-1],[-1,0]];
+const els = {
+  grid: document.getElementById('grid'),
+  total: document.getElementById('total'),
+  waterline: document.getElementById('waterline'),
+  step: document.getElementById('step'),
+  frames: document.getElementById('frames'),
+  m: document.getElementById('m'),
+  n: document.getElementById('n'),
+  queue: document.getElementById('queue'),
+  input: document.getElementById('input'),
+  speed: document.getElementById('speed'),
+  speedVal: document.getElementById('speedVal'),
+  preset: document.getElementById('preset'),
+  btnInit: document.getElementById('btnInit'),
+  btnStep: document.getElementById('btnStep'),
+  btnStepBack: document.getElementById('btnStepBack'),
+  btnPlay: document.getElementById('btnPlay'),
+  btnPause: document.getElementById('btnPause'),
+  btnReset: document.getElementById('btnReset'),
+  statusNow: document.getElementById('statusNow'),
+  statusLog: document.getElementById('statusLog'),
+};
+
+let ui = {
+  map: null,
+  cells: null,
+  frames: [],
+  idx: 0,
+  playing: false,
+  timer: null,
+};
+
+function seedRandom(seed=42){ let x=seed>>>0; return ()=> (x=(x*1664525+1013904223)>>>0)/2**32; }
+
+function getPreset(name){
+  if(name==='tiny'){
+    return [[5,5,5],[5,1,5],[5,5,5]];
+  }
+  if(name==='classic'){
+    return [
+      [1,4,3,1,3,2],
+      [3,2,1,3,2,4],
+      [2,3,3,2,3,1],
+      [4,3,2,2,3,4],
+      [5,5,5,5,5,5],
+    ];
+  }
+  if(name==='flat'){
+    return Array.from({length:4},()=> Array(6).fill(2));
+  }
+  if(name==='random'){
+    const rnd = seedRandom(1337);
+    const R=7, C=10;
+    const base=()=> Math.floor(rnd()*6)+1; // 1..6
+    const a = Array.from({length:R}, (_,r)=> Array.from({length:C}, base));
+    for(let r=0;r<R;r++){ a[r][0]+=4; a[r][C-1]+=4; }
+    for(let c=0;c<C;c++){ a[0][c]+=4; a[R-1][c]+=4; }
+    return a;
+  }
+  return [[1]];
+}
+
+function setInputFromPreset(){
+  const p = els.preset.value;
+  els.input.value = JSON.stringify(getPreset(p), null, 2);
+}
+
+function parseInput(){
+  try{
+    const m = JSON.parse(els.input.value);
+    if(!Array.isArray(m) || !Array.isArray(m[0])) throw new Error('Not a 2D array');
+    return m;
+  }catch(e){
+    alert('Invalid JSON matrix. Example: [[1,4,3],[3,2,5]]');
+    throw e;
+  }
+}
+
+function makeCells(heightMap){
+  const m = heightMap.length, n = heightMap[0].length;
+  els.grid.style.gridTemplateColumns = `repeat(${n}, minmax(32px, 1fr))`;
+  els.grid.innerHTML = '';
+  const cells = [];
+  for(let r=0;r<m;r++){
+    const row=[];
+    for(let c=0;c<n;c++){
+      const cell = document.createElement('div');
+      cell.className = 'cell';
+      cell.dataset.r=r; cell.dataset.c=c;
+
+      const h = document.createElement('div'); h.className='h';
+      const w = document.createElement('div'); w.className='w';
+      const txt = document.createElement('div'); txt.className='txt';
+      txt.textContent = heightMap[r][c];
+
+      cell.appendChild(h); cell.appendChild(w); cell.appendChild(txt);
+      els.grid.appendChild(cell);
+      row.push({el:cell, waterEl:w, textEl:txt});
+    }
+    cells.push(row);
+  }
+  return cells;
+}
+
+function clone2D(a){ return a.map(row=> row.slice()); }
+
+/*** Build a full trace of frames (for Step Back) ***/
+function buildTrace(heightMap){
+  const m = heightMap.length, n = heightMap[0].length;
+  const visited = Array.from({length:m},()=> Array(n).fill(false));
+  const water = Array.from({length:m},()=> Array(n).fill(0));
+  const heap = new MinPriorityQueue(i=> i[2]); // [r, c, boundaryHeight]
+  let totalWater = 0;
+  const frames = [];
+  let stepCounter = 0;
+
+  // seed boundary
+  for(let i=0;i<m;i++){
+    heap.enqueue([i,0,heightMap[i][0]]); visited[i][0]=true;
+    heap.enqueue([i,n-1,heightMap[i][n-1]]); visited[i][n-1]=true;
+  }
+  for(let j=0;j<n;j++){
+    heap.enqueue([0,j,heightMap[0][j]]); visited[0][j]=true;
+    heap.enqueue([m-1,j,heightMap[m-1][j]]); visited[m-1][j]=true;
+  }
+
+  // Initial frame
+  frames.push({
+    note: `Initialization: all boundary cells are inserted into the min-heap with their own heights as waterline. These form the initial “wall”.`,
+    step: stepCounter,
+    totalWater,
+    waterline: heap.isEmpty()? null : heap.peek()[2],
+    visited: clone2D(visited),
+    water: clone2D(water),
+    heapSnapshot: heap.toSorted(),
+    // focus omitted on init
+  });
+
+  while(!heap.isEmpty()){
+    const [r,c,bh] = heap.dequeue();
+    stepCounter++;
+    frames.push({
+      note: `Dequeue: pick the current lowest boundary cell [${r},${c}] with waterline = ${bh}. We expand its neighbors because trapped water is governed by the minimum surrounding wall.`,
+      step: stepCounter,
+      totalWater,
+      waterline: heap.isEmpty()? null : heap.peek()?.[2] ?? null,
+      visited: clone2D(visited),
+      water: clone2D(water),
+      heapSnapshot: heap.toSorted(),
+      focus: { r, c }, // NEW: highlight dequeued cell
+    });
+
+    for(const [dr,dc] of dirs){
+      const nr=r+dr, nc=c+dc;
+      if(nr<0||nr>=m||nc<0||nc>=n||visited[nr][nc]) continue;
+      visited[nr][nc] = true;
+
+      const nh = heightMap[nr][nc];
+      let add = 0, why = '';
+      if(nh < bh){
+        add = bh - nh;
+        totalWater += add;
+        water[nr][nc] += add;
+        why = `Since neighbor height nh=${nh} is below waterline bh=${bh}, it traps water: add = ${bh} - ${nh} = ${add}.`;
+      }else{
+        why = `Neighbor height nh=${nh} ≥ waterline bh=${bh}; no water added.`;
+      }
+      const nextBH = Math.max(nh, bh);
+      heap.enqueue([nr,nc,nextBH]);
+
+      stepCounter++;
+      frames.push({
+        note:
+          `Expand neighbor: from [${r},${c}] to [${nr},${nc}]. ${why} ` +
+          `Push neighbor with boundaryHeight = max(nh,bh) = max(${nh},${bh}) = ${nextBH} (effective wall along the path).`,
+        step: stepCounter,
+        totalWater,
+        waterline: heap.peek()?.[2] ?? null,
+        visited: clone2D(visited),
+        water: clone2D(water),
+        heapSnapshot: heap.toSorted(),
+        focus: { r, c },           // keep focus on popped cell
+        neighbor: { r: nr, c: nc } // NEW: highlight neighbor
+      });
+    }
+  }
+
+  // Final
+  stepCounter++;
+  frames.push({
+    note: `Finished: heap empty. All cells processed. Total trapped water = ${totalWater}.`,
+    step: stepCounter,
+    totalWater,
+    waterline: null,
+    visited: clone2D(visited),
+    water: clone2D(water),
+    heapSnapshot: [],
+    // focus optional
+  });
+
+  return frames;
+}
+
+/*** Rendering ***/
+function renderFrame(frame, cells, heightMap){
+  const {visited, water, heapSnapshot, waterline, totalWater, step, note, focus, neighbor} = frame;
+  const m = heightMap.length, n = heightMap[0].length;
+
+  els.step.textContent = String(step);
+  els.total.textContent = String(totalWater);
+  els.waterline.textContent = (waterline==null ? '–' : String(waterline));
+  els.frames.textContent = String(ui.frames.length);
+
+  // Paint visited + water text/overlay
+  for(let r=0;r<m;r++){
+    for(let c=0;c<n;c++){
+      const cell = cells[r][c];
+      const h = heightMap[r][c];
+      const wv = water[r][c];
+      cell.el.classList.toggle('visited', visited[r][c]);
+      const pct = wv>0 ? Math.min(100, (wv/(h+wv))*100) : 0;
+      cell.waterEl.style.height = pct.toFixed(1)+'%';
+      cell.textEl.textContent = h + (wv>0 ? `+${wv}` : '');
+    }
+  }
+
+  // Boundary markers
+  const boundarySet = new Set(heapSnapshot.map(([rr,cc])=> `${rr}#${cc}`));
+  for(let r=0;r<m;r++){
+    for(let c=0;c<n;c++){
+      const key = `${r}#${c}`;
+      cells[r][c].el.classList.toggle('boundary', boundarySet.has(key));
+    }
+  }
+
+  // Clear old focus/neighbor flags
+  for(let rr=0; rr<m; rr++){
+    for(let cc=0; cc<n; cc++){
+      cells[rr][cc].el.classList.remove('focus','neighbor');
+    }
+  }
+
+  // Apply focus (dequeued cell)
+  if(focus){
+    const {r: fr, c: fc} = focus;
+    if(fr>=0 && fr<m && fc>=0 && fc<n){
+      cells[fr][fc].el.classList.add('focus');
+    }
+  }
+
+  // Apply neighbor highlight
+  if(neighbor){
+    const {r: nr, c: nc} = neighbor;
+    if(nr>=0 && nr<m && nc>=0 && nc<n){
+      cells[nr][nc].el.classList.add('neighbor');
+    }
+  }
+
+  // Queue panel
+  els.queue.innerHTML = '';
+  heapSnapshot.forEach(([r,c,bh])=>{
+    const chip = document.createElement('div');
+    chip.className='chip';
+    chip.textContent = `[${r},${c}] ▸ ${bh}`;
+    els.queue.appendChild(chip);
+  });
+
+  // Status window
+  els.statusNow.textContent = note;
+}
+
+/*** Main init/reset ***/
+function resetAll(){
+  pause();
+  const map = parseInput();
+  ui.map = map;
+  els.m.textContent = String(map.length);
+  els.n.textContent = String(map[0].length);
+  ui.cells = makeCells(map);
+  ui.frames = buildTrace(map);
+  ui.idx = 0;
+  renderFrame(ui.frames[ui.idx], ui.cells, ui.map);
+  els.statusLog.textContent = '';
+  appendLog(ui.frames[ui.idx].note);
+}
+
+function appendLog(line){
+  const pre = els.statusLog;
+  pre.textContent += (pre.textContent ? '\n' : '') + `[#${ui.frames[ui.idx].step}] ${line}`;
+  pre.scrollTop = pre.scrollHeight;
+}
+
+/*** Controls ***/
+function stepOnce(){
+  if(!ui.frames.length) return;
+  if(ui.idx < ui.frames.length-1){
+    ui.idx++;
+    renderFrame(ui.frames[ui.idx], ui.cells, ui.map);
+    appendLog(ui.frames[ui.idx].note);
+  }
+}
+
+function stepBack(){
+  if(!ui.frames.length) return;
+  if(ui.idx > 0){
+    ui.idx--;
+    renderFrame(ui.frames[ui.idx], ui.cells, ui.map);
+    // rebuild log up to current index
+    els.statusLog.textContent = '';
+    for(let i=0;i<=ui.idx;i++){
+      els.statusLog.textContent += (i?'\n':'') + `[#${ui.frames[i].step}] ${ui.frames[i].note}`;
+    }
+    els.statusLog.scrollTop = els.statusLog.scrollHeight;
+  }
+}
+
+function setSpeedLabel(){
+  const ms = Number(els.speed.value);
+  els.speedVal.textContent = `${ms} ms`;
+  return ms;
+}
+
+function play(){
+  if(ui.playing) return;
+  ui.playing = true;
+  const tick = ()=>{
+    if(ui.idx >= ui.frames.length-1){ pause(); return; }
+    stepOnce();
+  };
+  const ms = setSpeedLabel();
+  ui.timer = setInterval(tick, Math.max(50, ms));
+}
+
+function pause(){
+  ui.playing=false;
+  if(ui.timer){ clearInterval(ui.timer); ui.timer=null; }
+}
+
+/*** Wire up UI ***/
+setInputFromPreset();
+resetAll();
+
+els.preset.addEventListener('change', setInputFromPreset);
+els.btnInit.addEventListener('click', resetAll);
+els.btnReset.addEventListener('click', resetAll);
+els.btnStep.addEventListener('click', stepOnce);
+els.btnStepBack.addEventListener('click', stepBack);
+els.btnPlay.addEventListener('click', play);
+els.btnPause.addEventListener('click', pause);
+els.speed.addEventListener('input', ()=>{
+  const was = ui.playing;
+  setSpeedLabel();
+  if(was){ pause(); play(); }
+});
+
+/*** Optional: click to tweak heights, then rebuild trace ***/
+els.grid.addEventListener('click', (e)=>{
+  const cell = e.target.closest('.cell');
+  if(!cell || !ui.map) return;
+  const r = +cell.dataset.r, c = +cell.dataset.c;
+  const map = ui.map.map(row=> row.slice());
+  map[r][c] = (map[r][c] + 1);
+  els.input.value = JSON.stringify(map, null, 2);
+  resetAll();
+});
+</script>
+</body>
+</html>

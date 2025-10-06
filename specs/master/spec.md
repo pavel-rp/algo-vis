@@ -1,0 +1,262 @@
+# Feature Specification: Algorithm Visualizer Framework
+
+**Feature Branch**: `001-visualizer-framework`
+**Created**: 2025-10-05
+**Status**: MVP Implemented (In Progress)
+**Last Updated**: 2025-10-05
+**Input**: User description: "Build an algorithm visualizer framework that allows developers to create interactive, animated visualizations of computer science algorithms..."
+
+## MVP Implementation Status
+
+**Completed (Critical Path)**:
+- ✅ Core visualization engine with frame-based playback
+- ✅ PlaybackController with Svelte 5 runes ($state, $effect)
+- ✅ GridRenderer component (DOM-only, fixed 40px cells)
+- ✅ Playback controls (play, pause, step forward/back, reset)
+- ✅ Speed control (0.5x to 4x)
+- ✅ Status panel with progress, descriptions, metrics
+- ✅ Plugin architecture (AlgorithmPlugin contract)
+- ✅ Trapping Rain Water II algorithm with 3 presets
+- ✅ Input validation and preset switching
+- ✅ TypeScript type system with Zod schemas
+
+**Deferred to Next Iteration**:
+- ⏸️ Code highlighting (Monaco Editor) - FR-019
+- ⏸️ Smart sampling for >5k frames - FR-004a
+- ⏸️ Smooth frame transitions/animations - FR-036
+- ⏸️ Canvas renderer for large grids - Performance optimization
+- ⏸️ LogPanel (chronological history)
+- ⏸️ Custom input editor (currently preset-only)
+- ⏸️ Legend panel
+- ⏸️ Dark mode toggle UI
+- ⏸️ All automated tests (Vitest, Playwright)
+
+**Technical Debt**:
+- No test coverage (0%)
+- Performance not validated for 20×20 grids (FR-037)
+- No spike validations performed (S001-S004)
+- No developer documentation for plugin creation
+
+## Execution Flow (main)
+```
+1. Parse user description from Input
+   → ✅ Feature description provided
+2. Extract key concepts from description
+   → ✅ Identified: educators, learners, algorithm plugins, step control, visualization
+3. For each unclear aspect:
+   → ✅ Marked with [NEEDS CLARIFICATION: specific question]
+4. Fill User Scenarios & Testing section
+   → ✅ User flows defined
+5. Generate Functional Requirements
+   → ✅ Requirements are testable
+6. Identify Key Entities (if data involved)
+   → ✅ Entities identified
+7. Run Review Checklist
+   → ✅ Spec has 3 NEEDS CLARIFICATION items (acceptable for draft)
+8. Return: SUCCESS (spec ready for planning)
+```
+
+---
+
+## ⚡ Quick Guidelines
+- ✅ Focus on WHAT users need and WHY
+- ❌ Avoid HOW to implement (no tech stack, APIs, code structure)
+- 👥 Written for business stakeholders, not developers
+
+---
+
+## Clarifications
+
+### Session 2025-10-05
+- Q: When users want to compare two algorithms side-by-side, how should the framework present this? → A: Defer to v2 - Skip comparison feature for initial release, single algorithm view only
+- Q: When an algorithm generates 10,000+ frames, what should the system do? → A: Smart sampling - Auto-reduce frame density for large inputs (show every Nth step when >5k frames)
+- Q: Should code highlighting be mandatory for every algorithm plugin, or optional? → A: Optional with pseudocode fallback - If plugin omits code, framework auto-generates pseudocode from trace descriptions
+
+---
+
+## User Scenarios & Testing
+
+### Primary User Story
+
+**As an educator**, I want to demonstrate how the "Trapping Rain Water II" algorithm works by showing it step-by-step with visual highlighting, so students can understand the min-heap expansion logic without getting lost in code.
+
+**As a student**, I want to watch an algorithm execute at my own pace, stepping backward to review confusing parts, so I can build intuition for how the algorithm makes decisions.
+
+**As a developer adding a new algorithm**, I want to write a simple trace function and register it with the framework, so I can create a new visualization without understanding the entire rendering system.
+
+### Acceptance Scenarios
+
+1. **Given** the framework is loaded with the Trapping Rain Water II algorithm, **When** the user clicks "Play", **Then** the visualization animates through algorithm steps with cells highlighting and water levels changing, following the execution trace.
+
+2. **Given** an algorithm is playing, **When** the user clicks "Pause" and then "Step Back", **Then** the visualization reverts to the previous step, showing the prior state of all data structures and highlights.
+
+3. **Given** a user wants to test different inputs, **When** they modify the JSON height map in the input field and click "Initialize", **Then** the visualization rebuilds the trace with the new input and restarts from step 0.
+
+4. **Given** an educator wants to explain what's happening, **When** the visualization reaches each step, **Then** a human-readable explanation appears in the status panel describing the current action (e.g., "Dequeue: pick the current lowest boundary cell [2,3] with waterline = 5...").
+
+5. **Given** a developer has written a new algorithm trace function following the plugin contract, **When** they register the algorithm with the framework, **Then** the algorithm appears in the library selector and works with all standard controls (play, pause, step, speed).
+
+6. **Given** the framework starts for the first time, **When** the user opens it, **Then** the Trapping Rain Water II algorithm is pre-loaded and ready to visualize (as the initial single-algorithm library).
+
+### Edge Cases
+
+- What happens when a user inputs invalid data (e.g., non-numeric values, empty arrays)?
+  → System MUST display clear validation error, prevent trace generation, keep previous valid state
+
+- What happens when an algorithm trace generates 10,000+ frames (very large input)?
+  → System MUST automatically reduce frame density (smart sampling: show every Nth step when trace exceeds 5,000 frames) to maintain performance while preserving algorithm narrative
+
+- What happens when a user tries to step back at step 0?
+  → System MUST keep state at step 0, optionally show visual indicator that beginning is reached
+
+- What happens when code highlighting is requested but the algorithm plugin provides no code?
+  → System MUST auto-generate pseudocode from frame descriptions (trace narrative converted to step-by-step pseudocode statements) and display it in the code panel with synchronized highlighting
+
+- What happens when a visualization component tries to render unsupported data (e.g., tree renderer receives grid data)?
+  → System MUST detect schema mismatch, display error message, fall back to raw data view or generic renderer
+
+---
+
+## Requirements
+
+### Functional Requirements
+
+#### Core Visualization Engine
+
+- **FR-001**: System MUST render algorithm execution frames based on a standardized trace format (array of frame objects with step, state, focus, metrics, description)
+
+- **FR-002**: System MUST support stepping forward through algorithm execution, advancing from frame N to frame N+1
+
+- **FR-003**: System MUST support stepping backward through algorithm execution, reverting from frame N to frame N-1 without re-running the algorithm
+
+- **FR-004**: System MUST preserve complete execution history to enable backward navigation without recomputation
+
+- **FR-004a**: System MUST apply smart sampling when traces exceed 5,000 frames, automatically reducing frame density (showing every Nth step) while maintaining key algorithm milestones
+
+- **FR-005**: System MUST display current step number, total steps, and algorithm-specific metrics (e.g., "Total Water: 42") during execution
+
+#### Playback Controls
+
+- **FR-006**: System MUST provide "Play" control that automatically advances through frames at a configurable interval
+
+- **FR-007**: System MUST provide "Pause" control that stops automatic playback while preserving current step
+
+- **FR-008**: System MUST provide "Step Forward" control that advances exactly one frame
+
+- **FR-009**: System MUST provide "Step Back" control that reverts exactly one frame
+
+- **FR-010**: System MUST provide speed control allowing users to adjust playback delay (e.g., 50ms to 2000ms per frame)
+
+- **FR-011**: System MUST display current playback speed to the user (e.g., "350 ms")
+
+- **FR-012**: System MUST provide "Reset" or "Initialize" control that returns visualization to step 0 (initial state)
+
+#### Input & Customization
+
+- **FR-013**: System MUST allow users to modify algorithm inputs through an editable interface (text area, form fields, or visual editor)
+
+- **FR-014**: System MUST validate user inputs before generating a new trace, displaying specific error messages for invalid data
+
+- **FR-015**: System MUST rebuild the algorithm trace when users submit new valid input data
+
+- **FR-016**: System MUST provide preset input examples for each algorithm (e.g., "Tiny 3×3 bowl", "Classic 5×6 basin", "Random")
+
+#### Educational Features
+
+- **FR-017**: System MUST display a human-readable explanation for each algorithm step, describing what action is being taken and why
+
+- **FR-018**: System MUST maintain a chronological log of step explanations allowing users to review the execution narrative
+
+- **FR-019**: System MUST synchronize code highlighting with visualization steps, showing which line/block corresponds to the current step
+
+- **FR-019a**: Plugin contract MUST allow code to be optional; when a plugin provides no code, system MUST auto-generate pseudocode from frame descriptions
+
+- **FR-020**: System MUST provide visual legends explaining the meaning of colors, highlights, and symbols used in the visualization
+
+#### Algorithm Library & Selection
+
+- **FR-021**: System MUST display a library/menu of available algorithms for users to select
+
+- **FR-022**: System MUST load the selected algorithm's visualization, trace function, and input controls when chosen
+
+- **FR-023**: System MUST ship with the Trapping Rain Water II algorithm as the initial library entry
+
+- **FR-024**: System MUST support single algorithm visualization (side-by-side comparison deferred to future version)
+
+#### Plugin Architecture
+
+- **FR-025**: System MUST define a plugin contract that algorithm creators follow to integrate new visualizations
+
+- **FR-026**: Plugin contract MUST require a `trace(input)` function that returns an array of frame objects
+
+- **FR-027**: Plugin contract MUST define frame schema including: step number, algorithm state, optional focus/highlight data, metrics, and description text
+
+- **FR-028**: Plugin contract MUST require input validation logic to ensure type-safe trace generation
+
+- **FR-029**: Plugin contract MUST allow algorithm creators to specify preset input examples
+
+- **FR-030**: System MUST allow developers to register new algorithms by providing a compliant plugin (code-based registration, not necessarily requiring UI)
+
+- **FR-031**: System MUST work correctly with any plugin that adheres to the contract, without requiring framework code changes
+
+#### Visual Components
+
+- **FR-032**: System MUST provide a grid/matrix visualization component (for algorithms like Trapping Rain Water II, dynamic programming tables)
+
+- **FR-033**: System MUST provide visual highlighting for "focused" cells/elements currently being processed
+
+- **FR-034**: System MUST provide visual highlighting for "neighbor" or related cells/elements
+
+- **FR-035**: System MUST support visual overlays (e.g., water fill levels, color gradients) on data structures
+
+- **FR-036**: System MUST render smooth transitions between frames when animating (not instant jumps)
+
+- **FR-037**: System MUST maintain 60fps rendering performance for grids up to 20×20 cells and graphs up to 100 nodes
+
+### Key Entities
+
+- **Algorithm**: Represents a specific algorithm that can be visualized (name, description, trace function, input schema, preset examples, optional code for highlighting)
+
+- **Frame**: Represents a single step in algorithm execution (step number, algorithm-specific state data, focus markers, neighbor markers, metrics object, description text)
+
+- **Trace**: Complete execution history for a given algorithm and input (ordered array of frames, metadata like total steps and completion status)
+
+- **VisualizationComponent**: Reusable rendering component for specific data structure types (grid renderer, tree renderer, graph renderer, array renderer, heap renderer)
+
+- **PlaybackController**: Manages execution flow (current step index, play/pause state, speed setting, step forward/back methods)
+
+- **Plugin**: Algorithm integration package (trace function, input validator, preset examples, visualization component mapping, optional code for highlighting)
+
+---
+
+## Review & Acceptance Checklist
+
+### Content Quality
+- [x] No implementation details (languages, frameworks, APIs)
+- [x] Focused on user value and business needs
+- [x] Written for non-technical stakeholders
+- [x] All mandatory sections completed
+
+### Requirement Completeness
+- [x] No [NEEDS CLARIFICATION] markers remain
+- [x] Requirements are testable and unambiguous
+- [x] Success criteria are measurable
+- [x] Scope is clearly bounded
+- [x] Dependencies and assumptions identified
+
+
+---
+
+## Execution Status
+
+- [x] User description parsed
+- [x] Key concepts extracted
+- [x] Ambiguities marked
+- [x] User scenarios defined
+- [x] Requirements generated
+- [x] Entities identified
+- [x] Review checklist passed (with noted clarifications needed)
+
+---
+
+**Next Steps**: All clarifications resolved. Proceed to `/plan` for implementation planning.
