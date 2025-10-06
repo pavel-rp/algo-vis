@@ -204,7 +204,8 @@ export const trappingRainWater2Plugin: AlgorithmPlugin<number[][], GridState> = 
 	name: 'Trapping Rain Water II',
 	description:
 		'Given an m x n matrix of non-negative integers representing the height of each unit cell, compute how much water can be trapped after raining.',
-	category: 'Grid Algorithms',
+	category: 'Dynamic Programming',
+	subcategory: '2D Array',
 	visualizationType: 'grid',
 	presets: [
 		{

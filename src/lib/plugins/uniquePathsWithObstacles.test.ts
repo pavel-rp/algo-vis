@@ -248,7 +248,7 @@ describe('uniquePathsWithObstaclesPlugin', () => {
 			expect(uniquePathsWithObstaclesPlugin.id).toBe('unique-paths-with-obstacles');
 			expect(uniquePathsWithObstaclesPlugin.name).toBe('Unique Paths with Obstacles');
 			expect(uniquePathsWithObstaclesPlugin.description).toBeTruthy();
-			expect(uniquePathsWithObstaclesPlugin.category).toBe('Dynamic Programming');
+			expect(uniquePathsWithObstaclesPlugin.category).toBe('Graphs');
 			expect(uniquePathsWithObstaclesPlugin.visualizationType).toBe('grid');
 		});
 

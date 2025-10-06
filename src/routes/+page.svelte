@@ -1,135 +1,85 @@
 <script lang="ts">
-	import { PlaybackController } from '$lib/core/PlaybackController.svelte';
-	import GridRenderer from '$lib/renderers/GridRenderer.svelte';
-	import PlaybackControls from '$lib/components/PlaybackControls.svelte';
-	import SpeedControl from '$lib/components/SpeedControl.svelte';
-	import StatusPanel from '$lib/components/StatusPanel.svelte';
-	import { trappingRainWater2Plugin } from '$lib/plugins/trappingRainWater2';
-	import { uniquePathsWithObstaclesPlugin } from '$lib/plugins/uniquePathsWithObstacles';
-
-	const algorithms = [trappingRainWater2Plugin, uniquePathsWithObstaclesPlugin];
-
-	const controller = new PlaybackController();
-	let selectedAlgorithmIndex = $state(0);
-	let selectedPresetIndex = $state(0);
-
-	let currentAlgorithm = $derived(algorithms[selectedAlgorithmIndex]);
-	let currentPreset = $derived(currentAlgorithm.presets[selectedPresetIndex]);
-	let gridMode = $derived(
-		currentAlgorithm.id === 'unique-paths-with-obstacles'
-			? ('obstacle' as const)
-			: ('height' as const)
-	);
-
-	// Load trace when algorithm or preset changes
-	$effect(() => {
-		const algorithm = algorithms[selectedAlgorithmIndex];
-		const preset = algorithm.presets[selectedPresetIndex];
-		const validation = algorithm.validateInput(preset.data);
-
-		if (validation.valid) {
-			const trace = algorithm.trace(preset.data);
-			controller.loadTrace(trace);
-		}
-	});
-
-	function handleAlgorithmChange(index: number) {
-		selectedAlgorithmIndex = index;
-		selectedPresetIndex = 0; // Reset to first preset when changing algorithms
-	}
-
-	function handlePresetChange(index: number) {
-		selectedPresetIndex = index;
-	}
+	/**
+	 * Home Page (Welcome)
+	 *
+	 * Simplified landing page. Algorithm selection now happens via sidebar navigation.
+	 *
+	 * Feature: 003-move-the-navigation
+	 * Date: 2025-10-06
+	 */
 </script>
 
 <svelte:head>
-	<title>Algorithm Visualizer - {currentAlgorithm.name}</title>
+	<title>Algorithm Visualizer</title>
 </svelte:head>
 
-<div class="min-h-screen bg-[var(--color-bg)] text-[var(--color-text)] pb-24">
-	<div class="max-w-7xl mx-auto space-y-6 p-8">
+<div class="min-h-screen bg-[var(--color-bg)] text-[var(--color-text)]">
+	<div class="max-w-4xl mx-auto py-16 px-8">
 		<!-- Header -->
-		<header class="space-y-2">
-			<h1 class="text-4xl font-bold">Algorithm Visualizer</h1>
-			<p class="text-gray-600 dark:text-gray-400">
+		<header class="space-y-4 text-center mb-12">
+			<h1 class="text-5xl font-bold">Algorithm Visualizer</h1>
+			<p class="text-xl text-gray-600 dark:text-gray-400">
 				Interactive step-by-step visualization of computer science algorithms
 			</p>
 		</header>
 
-		<!-- Algorithm selector -->
-		<div class="bg-white dark:bg-gray-800 rounded-lg p-4 shadow">
-			<div class="block text-sm font-semibold mb-2">Select Algorithm:</div>
-			<div class="flex gap-2 flex-wrap">
-				{#each algorithms as algorithm, index}
-					<button
-						onclick={() => handleAlgorithmChange(index)}
-						class="px-4 py-2 rounded transition-colors {selectedAlgorithmIndex === index
-							? 'bg-purple-500 text-white'
-							: 'bg-gray-200 dark:bg-gray-700 hover:bg-gray-300 dark:hover:bg-gray-600'}"
-					>
-						{algorithm.name}
-					</button>
-				{/each}
-			</div>
-			<div class="mt-3 p-3 bg-gray-50 dark:bg-gray-900 rounded">
-				<p class="text-sm font-semibold text-gray-700 dark:text-gray-300">
-					{currentAlgorithm.name}
-				</p>
-				<p class="text-sm text-gray-600 dark:text-gray-400 mt-1">
-					{currentAlgorithm.description}
-				</p>
-				<span
-					class="inline-block mt-2 px-2 py-1 text-xs bg-blue-100 dark:bg-blue-900 text-blue-800 dark:text-blue-200 rounded"
-				>
-					{currentAlgorithm.category}
-				</span>
-			</div>
-		</div>
+		<!-- Welcome Content -->
+		<div class="bg-white dark:bg-gray-800 rounded-lg shadow-lg p-8 space-y-6">
+			<h2 class="text-2xl font-semibold">Welcome!</h2>
 
-		<!-- Preset selector -->
-		<div class="bg-white dark:bg-gray-800 rounded-lg p-4 shadow">
-			<div class="block text-sm font-semibold mb-2">Select Preset:</div>
-			<div class="flex gap-2 flex-wrap">
-				{#each currentAlgorithm.presets as preset, index}
-					<button
-						onclick={() => handlePresetChange(index)}
-						class="px-4 py-2 rounded transition-colors {selectedPresetIndex === index
-							? 'bg-blue-500 text-white'
-							: 'bg-gray-200 dark:bg-gray-700 hover:bg-gray-300 dark:hover:bg-gray-600'}"
-					>
-						{preset.name}
-					</button>
-				{/each}
-			</div>
-			{#if currentPreset.description}
-				<p class="text-sm text-gray-500 dark:text-gray-400 mt-2">
-					{currentPreset.description}
-				</p>
-			{/if}
-		</div>
+			<p class="text-gray-700 dark:text-gray-300">
+				Explore algorithm visualizations using the sidebar navigation. Select an algorithm category
+				and then choose a specific algorithm to visualize its execution step-by-step.
+			</p>
 
-		<!-- Main content -->
-		<div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
-			<!-- Visualization -->
-			<div class="lg:col-span-2 bg-white dark:bg-gray-800 rounded-lg shadow overflow-hidden">
-				<GridRenderer frame={controller.currentFrame} heightMap={currentPreset.data} mode={gridMode} />
-			</div>
-
-			<!-- Status Panel -->
 			<div class="space-y-4">
-				<StatusPanel {controller} />
+				<h3 class="text-lg font-medium">Available Categories:</h3>
+				<div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+					<div class="border border-gray-200 dark:border-gray-700 rounded-lg p-4">
+						<h4 class="font-semibold text-blue-600 dark:text-blue-400">Dynamic Programming</h4>
+						<p class="text-sm text-gray-600 dark:text-gray-400 mt-1">
+							Algorithms that solve problems by breaking them down into overlapping subproblems
+						</p>
+					</div>
+					<div class="border border-gray-200 dark:border-gray-700 rounded-lg p-4">
+						<h4 class="font-semibold text-green-600 dark:text-green-400">Graphs</h4>
+						<p class="text-sm text-gray-600 dark:text-gray-400 mt-1">
+							Algorithms for traversing and analyzing graph structures
+						</p>
+					</div>
+				</div>
+			</div>
+
+			<div class="bg-blue-50 dark:bg-blue-900/20 border border-blue-200 dark:border-blue-800 rounded-lg p-4">
+				<p class="text-sm text-blue-800 dark:text-blue-200">
+					<strong>Getting Started:</strong> Use the sidebar on the left (or tap the menu icon on mobile)
+					to navigate through algorithm categories and select a visualization.
+				</p>
 			</div>
 		</div>
 
-	</div>
-
-	<!-- Controls - Sticky Footer -->
-	<div class="fixed bottom-0 left-0 right-0 bg-white dark:bg-gray-800 border-t border-gray-200 dark:border-gray-700 shadow-lg">
-		<div class="max-w-7xl mx-auto p-4">
-			<div class="flex flex-col sm:flex-row items-center justify-between gap-4">
-				<PlaybackControls {controller} />
-				<SpeedControl {controller} />
+		<!-- Features -->
+		<div class="mt-12 grid grid-cols-1 md:grid-cols-3 gap-6">
+			<div class="text-center space-y-2">
+				<div class="text-4xl">🎯</div>
+				<h3 class="font-semibold">Step-by-Step</h3>
+				<p class="text-sm text-gray-600 dark:text-gray-400">
+					Visualize each step of algorithm execution
+				</p>
+			</div>
+			<div class="text-center space-y-2">
+				<div class="text-4xl">⚡</div>
+				<h3 class="font-semibold">Interactive</h3>
+				<p class="text-sm text-gray-600 dark:text-gray-400">
+					Control playback speed and step through manually
+				</p>
+			</div>
+			<div class="text-center space-y-2">
+				<div class="text-4xl">📊</div>
+				<h3 class="font-semibold">Multiple Presets</h3>
+				<p class="text-sm text-gray-600 dark:text-gray-400">
+					Try different inputs to see how algorithms adapt
+				</p>
 			</div>
 		</div>
 	</div>

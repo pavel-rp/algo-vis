@@ -26,3 +26,82 @@ body {
 	color: var(--color-text);
 	font-family: system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
 }
+
+/* ============================================================================
+ * Sidebar Navigation Styles
+ * Feature: 003-move-the-navigation
+ * ========================================================================== */
+
+/* Sidebar Container */
+.sidebar {
+	/* Use GPU-accelerated transform for smooth animations (NFR-001, NFR-002) */
+	transition: transform 200ms cubic-bezier(0.4, 0, 0.2, 1);
+	will-change: transform;
+}
+
+/* Backdrop Overlay (mobile only) */
+.sidebar-backdrop {
+	transition: opacity 200ms cubic-bezier(0.4, 0, 0.2, 1);
+	animation: fadeIn 200ms ease-out;
+}
+
+@keyframes fadeIn {
+	from {
+		opacity: 0;
+	}
+	to {
+		opacity: 1;
+	}
+}
+
+/* Responsive Layout */
+@media (max-width: 767px) {
+	/* Mobile: Drawer behavior */
+	.sidebar {
+		width: 280px;
+	}
+}
+
+@media (min-width: 768px) and (max-width: 1023px) {
+	/* Tablet: Narrower sidebar */
+	.sidebar {
+		width: 220px;
+	}
+}
+
+@media (min-width: 1024px) {
+	/* Desktop: Full-width sidebar */
+	.sidebar {
+		width: 280px;
+	}
+}
+
+/* Tree Node Styles */
+[role='tree'] {
+	user-select: none;
+}
+
+[role='treeitem'] {
+	cursor: pointer;
+	transition: background-color 150ms ease-in-out;
+}
+
+/* Active algorithm highlighting */
+[role='treeitem'].active {
+	@apply bg-blue-50 text-blue-600 border-l-4 border-blue-600 font-medium;
+}
+
+/* Hover states */
+[role='treeitem']:hover:not(.active) {
+	@apply bg-gray-100;
+}
+
+/* Focus states for accessibility */
+[role='treeitem']:focus {
+	@apply outline-2 outline-blue-500 -outline-offset-2;
+}
+
+/* Expand/collapse icon animation */
+.tree-node-icon {
+	transition: transform 150ms ease-in-out;
+}
