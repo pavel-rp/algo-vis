@@ -19,6 +19,9 @@ function uniquePathsWithObstacles(obstacleGrid: number[][]): Trace<DPState> {
         const dp: number[][] = Array.from({ length: m }, () => Array(n).fill(0));
         const visited: boolean[][] = Array.from({ length: m }, () => Array(n).fill(false));
         const visitedNodeIds: string[] = [];
+        const predecessor: ({ row: number; col: number } | null)[][] = Array.from({ length: m }, () =>
+                Array(n).fill(null)
+        );
 
         const obstacleNodes = obstacleGrid
                 .map((row, i) => row.map((value, j) => (value === 1 ? `${i},${j}` : null)))
@@ -73,7 +76,8 @@ function uniquePathsWithObstacles(obstacleGrid: number[][]): Trace<DPState> {
         });
 
 	// Initialize first cell
-	dp[0][0] = obstacleGrid[0][0] === 1 ? 0 : 1;
+        dp[0][0] = obstacleGrid[0][0] === 1 ? 0 : 1;
+        predecessor[0][0] = null;
         frames.push({
                 step: step++,
                 state: {
@@ -128,9 +132,10 @@ function uniquePathsWithObstacles(obstacleGrid: number[][]): Trace<DPState> {
                                 visitedNodeIds.push(cellId);
                         }
 
-			if (obstacleGrid[i][j] === 1) {
-				curRow[j] = 0;
-				dp[i][j] = 0;
+                        if (obstacleGrid[i][j] === 1) {
+                                curRow[j] = 0;
+                                dp[i][j] = 0;
+                                predecessor[i][j] = null;
 
                                 frames.push({
                                         step: step++,
@@ -152,11 +157,21 @@ function uniquePathsWithObstacles(obstacleGrid: number[][]): Trace<DPState> {
 						'Cur Row': curRow.filter((v) => v !== undefined).join(', ') || '[]'
 					}
 				});
-			} else {
-				const fromTop = prevRow[j];
-				const fromLeft = j > 0 ? curRow[j - 1] : 0;
-				curRow[j] = fromTop + fromLeft;
-				dp[i][j] = curRow[j];
+                        } else {
+                                const fromTop = prevRow[j];
+                                const fromLeft = j > 0 ? curRow[j - 1] : 0;
+                                curRow[j] = fromTop + fromLeft;
+                                dp[i][j] = curRow[j];
+
+                                let prevCell: { row: number; col: number } | null = null;
+                                if (curRow[j] > 0) {
+                                        if (j > 0 && curRow[j - 1] > 0) {
+                                                prevCell = { row: i, col: j - 1 };
+                                        } else if (i > 0 && prevRow[j] > 0) {
+                                                prevCell = { row: i - 1, col: j };
+                                        }
+                                }
+                                predecessor[i][j] = prevCell;
 
                                 const neighbors = [];
                                 if (i > 0)
@@ -211,38 +226,21 @@ function uniquePathsWithObstacles(obstacleGrid: number[][]): Trace<DPState> {
                 if (dp[m - 1][n - 1] === 0) return [];
 
                 const path: string[] = [];
-                let row = m - 1;
-                let col = n - 1;
+                let current: { row: number; col: number } | null = {
+                        row: m - 1,
+                        col: n - 1
+                };
 
-                while (row >= 0 && col >= 0) {
-                        path.unshift(`${row},${col}`);
-                        if (row === 0 && col === 0) {
-                                break;
-                        }
+                while (current) {
+                        const id = `${current.row},${current.col}`;
+                        path.unshift(id);
 
-                        const leftValue = col > 0 ? dp[row][col - 1] : 0;
-                        const upValue = row > 0 ? dp[row - 1][col] : 0;
-
-                        if (leftValue > 0 && upValue > 0) {
-                                if (leftValue >= upValue) {
-                                        col -= 1;
-                                } else {
-                                        row -= 1;
-                                }
-                        } else if (leftValue > 0) {
-                                col -= 1;
-                        } else if (upValue > 0) {
-                                row -= 1;
-                        } else if (col > 0) {
-                                col -= 1;
-                        } else if (row > 0) {
-                                row -= 1;
-                        } else {
-                                break;
-                        }
+                        const prev = predecessor[current.row][current.col];
+                        if (!prev) break;
+                        current = prev;
                 }
 
-                return path;
+                return path[0] === '0,0' ? path : [];
         };
 
         // Final result

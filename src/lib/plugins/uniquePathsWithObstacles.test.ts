@@ -128,18 +128,41 @@ describe('uniquePathsWithObstaclesPlugin', () => {
 			expect(lastFrame.metrics?.['Total Paths']).toBe(2);
 		});
 
-		it('should calculate correct paths for 3x3 grid with obstacle', () => {
-			const grid = [
-				[0, 0, 0],
-				[0, 1, 0],
-				[0, 0, 0]
-			];
-			const trace = uniquePathsWithObstaclesPlugin.trace(grid);
-			const lastFrame = trace.frames[trace.frames.length - 1];
+                it('should calculate correct paths for 3x3 grid with obstacle', () => {
+                        const grid = [
+                                [0, 0, 0],
+                                [0, 1, 0],
+                                [0, 0, 0]
+                        ];
+                        const trace = uniquePathsWithObstaclesPlugin.trace(grid);
+                        const lastFrame = trace.frames[trace.frames.length - 1];
 
-			// Center obstacle blocks direct paths
-			expect(lastFrame.metrics?.['Total Paths']).toBe(2);
-		});
+                        // Center obstacle blocks direct paths
+                        expect(lastFrame.metrics?.['Total Paths']).toBe(2);
+                });
+
+                it('should highlight a valid reconstructed path when one exists', () => {
+                        const grid = [
+                                [0, 0, 0],
+                                [0, 1, 0],
+                                [0, 0, 0]
+                        ];
+                        const trace = uniquePathsWithObstaclesPlugin.trace(grid);
+                        const lastFrame = trace.frames[trace.frames.length - 1];
+
+                        const pathHighlight = lastFrame.globalHighlights?.find((highlight) => highlight.role === 'path-final');
+                        expect(pathHighlight).toBeDefined();
+                        const nodes = pathHighlight?.nodes ?? [];
+                        expect(nodes[0]).toBe('0,0');
+                        expect(nodes[nodes.length - 1]).toBe('2,2');
+
+                        for (let idx = 1; idx < nodes.length; idx++) {
+                                const [prevRow, prevCol] = nodes[idx - 1].split(',').map(Number);
+                                const [row, col] = nodes[idx].split(',').map(Number);
+                                const manhattan = Math.abs(prevRow - row) + Math.abs(prevCol - col);
+                                expect(manhattan).toBe(1);
+                        }
+                });
 
 		it('should return 0 paths when start has obstacle', () => {
 			const grid = [
