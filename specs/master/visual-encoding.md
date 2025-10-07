@@ -4,27 +4,31 @@ This document standardizes the visual language for algorithm visualizations acro
 
 ## 1. Global State Palette
 
-Each algorithm frame should map its local and global state to the tokens below. Colors reference Tailwind CSS v4 utility tokens. Unless noted, fills use 90% opacity in light theme and 80% in dark theme to maintain a minimum 4.5:1 contrast against base surfaces (`bg-white` for light, `bg-slate-900` for dark).
+Each algorithm frame should map its local and global state to the tokens below. Colors reference Tailwind CSS v4 utility tokens. Unless noted, light-theme fills render at full opacity while dark-theme fills use 80% opacity to maintain a minimum 4.5:1 contrast against base surfaces (`bg-white` for light, `bg-slate-900` for dark).
 
 | State | Description | Structure Agnostic Encoding | Light Theme | Dark Theme |
 | --- | --- | --- | --- | --- |
-| `start` | Entry cell/node/root/first pointer. | Fill or primary badge. | `bg-emerald-500`, `border-emerald-600` | `bg-emerald-400/80`, `border-emerald-300/80` |
-| `goal` | Exit cell/node/target/resolved pointer. | Fill with high contrast outline. | `bg-rose-500`, `border-rose-600` | `bg-rose-400/80`, `border-rose-300/80` |
+| `start` | Entry cell/node/root/first pointer. | Fill or primary badge. | `bg-emerald-700`, `border-emerald-800` | `bg-emerald-400/80`, `border-emerald-300/80` |
+| `goal` | Exit cell/node/target/resolved pointer. | Fill with high contrast outline. | `bg-rose-600`, `border-rose-700` | `bg-rose-400/80`, `border-rose-300/80` |
 | `frontier` / `open set` | Candidates pending expansion (queues, heaps, stacks). | Outline + optional badge. | `border-sky-500`, `ring-sky-500/90` | `border-sky-300/90`, `ring-sky-200/70` |
-| `current` / `dequeued` | Element being processed this step. | Fill + pulse. | `bg-amber-400`, `border-amber-500` | `bg-amber-300/80`, `border-amber-200/80` |
-| `visited` / `closed` | Explored elements excluded from frontier. | Fill only. | `bg-slate-300`, `border-slate-400` | `bg-slate-500/70`, `border-slate-400/60` |
-| `tentative path` / `candidate` | Best-known path, cost, or candidate solution. | Stroke or dashed outline. | `stroke-indigo-400`, `stroke-[3px]`, `opacity-80` | `stroke-indigo-300/80`, `stroke-[3px]` |
-| `confirmed path` / `answer` | Final path, value, or optimal set after completion. | Stroke + glow. | `stroke-amber-500`, `drop-shadow-[0_0_6px_rgba(251,191,36,0.6)]` | `stroke-amber-300`, `drop-shadow-[0_0_6px_rgba(253,230,138,0.7)]` |
+| `current` / `dequeued` | Element being processed this step. | Fill + pulse. | `bg-amber-500`, `border-amber-600` | `bg-amber-300/80`, `border-amber-200/80` |
+| `visited` / `closed` | Explored elements excluded from frontier. | Fill only. | `bg-slate-400`, `border-slate-500` | `bg-slate-500/70`, `border-slate-400/60` |
+| `tentative path` / `candidate` | Best-known path, cost, or candidate solution. | Stroke or dashed outline. | `stroke-indigo-500`, `stroke-[3px]` | `stroke-indigo-300/80`, `stroke-[3px]` |
+| `confirmed path` / `answer` | Final path, value, or optimal set after completion. | Stroke + glow. | `stroke-amber-600`, `drop-shadow-[0_0_6px_rgba(217,119,6,0.6)]` | `stroke-amber-300`, `drop-shadow-[0_0_6px_rgba(253,230,138,0.7)]` |
 | `obstacle` / `invalid` | Impassable cell/edge/constraint violation. | Fill or diagonal hatch overlay. | `bg-slate-700`, `border-slate-800` | `bg-slate-800/90`, `border-slate-950/80` |
 | `weight` emphasis / `cost` | Weighted nodes/edges, dynamic costs. | Numeric badge. | `text-slate-700`, `bg-slate-100` | `text-slate-100`, `bg-slate-700/70` |
 | `backtrack` marker / `recursion unwind` | States being retraced during reconstruction. | Outline + arrow chevrons. | `border-purple-400`, `ring-purple-300/70` | `border-purple-300/80`, `ring-purple-200/60` |
 | `pruned` | Branch discarded by pruning/constraint failure. | Diagonal cross overlay. | `border-rose-400/90`, `bg-rose-50/70` | `border-rose-300/70`, `bg-rose-500/30` |
 | `heuristic` emphasis | Heuristic-driven scoring (e.g., A*). | Corner badge. | `bg-cyan-200`, `text-cyan-900` | `bg-cyan-500/70`, `text-cyan-50` |
 | `component` | Connected/component identifiers (Union Find, islands). | Label + subtle fill. | `bg-emerald-200/60`, `border-emerald-400/70` | `bg-emerald-500/40`, `border-emerald-400/50` |
+| `pivot` | Active partition element in sorting algorithms. | Badge anchored to element. | `bg-fuchsia-400`, `border-fuchsia-600/80` | `bg-fuchsia-500/70`, `border-fuchsia-400/80` |
+| `comparison` | Elements currently compared during ordering. | Frontier outline + temporary wash. | `ring-sky-500/90`, `bg-sky-100/80` | `ring-sky-300/80`, `bg-sky-800/40` |
+| `swap` | Elements exchanging positions. | Flash or transient fill. | `bg-amber-200/80`, `border-amber-500` | `bg-amber-600/50`, `border-amber-400/70` |
+| `sorted` | Finalized order segments. | Stable fill or stroke. | `bg-emerald-200/80`, `stroke-amber-600` | `bg-emerald-500/40`, `stroke-amber-300` |
 
 ### 1.1 Opacity & Contrast Rules
 
-- Ensure filled states maintain ≥ 4.5:1 contrast with any underlying base color. For example, `bg-emerald-500` (`#10B981`) on `bg-white` has a 4.9:1 contrast; in dark mode the `bg-emerald-400/80` overlay yields >7:1 against `bg-slate-900`.
+- Ensure filled states maintain ≥ 4.5:1 contrast with any underlying base color. For example, `bg-emerald-700` (`#047857`) on `bg-white` reaches ≈5.6:1 contrast; in dark mode the `bg-emerald-400/80` overlay yields >7:1 against `bg-slate-900`.
 - When stacking multiple fills, reduce each successive layer’s opacity by 10 percentage points to preserve legibility (minimum 60%).
 - Text overlays (labels, metrics) must use `text-slate-900` in light mode and `text-slate-100` in dark mode to keep ≥ 7:1 contrast against their badge background.
 - When a state must communicate both fill and text (e.g., `component` labels), ensure the combined fill + badge contrast remains ≥ 3:1 against the base surface and ≥ 4.5:1 for text.
@@ -85,7 +89,7 @@ Each algorithm frame should map its local and global state to the tokens below. 
 
 - Base gradient: `from-sky-200/70 via-sky-300/70 to-sky-400/70` in light mode; `from-sky-300/60 via-sky-400/60 to-sky-500/60` in dark mode.
 - Blend mode: `mix-blend-multiply` for light, `mix-blend-screen` for dark to maintain depth without overpowering walls.
-- Always render beneath `current`, `frontier`, and `confirmed path` layers but above `visited`.
+- Always render beneath `visited` while allowing higher priority states (`current`, `frontier`, `confirmed path`) to remain fully visible above the water overlay.
 
 ### 3.2 Dynamic Programming Heatmap
 
@@ -106,7 +110,7 @@ Each algorithm frame should map its local and global state to the tokens below. 
 ### 3.5 Probability / Expectation Heatmap
 
 - For problems modeling probability or expected values, use `from-emerald-200 via-sky-200 to-sky-400` gradients (light) and `from-emerald-500/50 via-sky-500/40 to-sky-700/50` (dark).
-- Annotate tooltips with percentages and ensure overlays sit below `current` states but above `visited`.
+- Annotate tooltips with percentages and ensure overlays sit beneath `visited` while remaining above base terrain.
 
 ## 4. State Stacking & Priority
 
@@ -156,7 +160,7 @@ Renderers must apply states in the following z-order (bottom → top):
 
 - Tailwind tokens above assume Tailwind CSS v4 default palette. If you extend the palette, update this document and notify maintainers.
 - Automated renderers should expose a helper (e.g., `resolveStateStyles(state, theme)`) that reads directly from this spec to avoid divergence.
-- Algorithm categories not explicitly listed (e.g., tries, segment trees, monotonic stacks) must map their states to the closest descriptors here (`component`, `frontier`, `window`, `pruned`) or document new tokens with accessibility data.
+- Algorithm categories not explicitly listed (e.g., tries, suffix arrays, monotonic stacks) must map their states to the closest descriptors here (`component`, `frontier`, `window`, `pruned`) or document new tokens with accessibility data.
 
 ---
 
