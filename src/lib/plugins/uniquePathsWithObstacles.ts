@@ -93,7 +93,7 @@ function uniquePathsWithObstacles(obstacleGrid: number[][]): Trace<DPState> {
                 globalHighlights: snapshotHighlights(),
                 description: `Initialize: prevRow[0] = ${prevRow[0]} (starting position${
                         obstacleGrid[0][0] === 1 ? ' is blocked!' : ''
-                }). *Set starting paths to ${dp[0][0]}*`,
+                }).\nAggregate update: Set starting paths to ${dp[0][0]}`,
                 metrics: { Row: 0, Column: 0, 'Prev Row': prevRow.join(', ') }
         });
 
@@ -144,7 +144,7 @@ function uniquePathsWithObstacles(obstacleGrid: number[][]): Trace<DPState> {
                                         },
                                         focus: [{ type: 'grid-cell', id: cellId, role: 'obstacle' }],
                                         globalHighlights: snapshotHighlights(),
-                                        description: `Cell [${i},${j}] is blocked (obstacle). Set paths = 0. *Attempted path update blocked ⇒ paths remain 0*`,
+                                        description: `Cell [${i},${j}] is blocked (obstacle). Set paths = 0.\nAggregate check: Attempted path update blocked ⇒ paths remain 0`,
                                         metrics: {
                                                 Row: i,
                                                 Column: j,
@@ -177,7 +177,7 @@ function uniquePathsWithObstacles(obstacleGrid: number[][]): Trace<DPState> {
                                         focus: [{ type: 'grid-cell', id: cellId, role: 'current' }],
                                         neighbors: neighbors.length > 0 ? neighbors : undefined,
                                         globalHighlights: snapshotHighlights(),
-                                        description: `Cell [${i},${j}]: paths = from_top(${fromTop}) + from_left(${fromLeft}) = ${curRow[j]}. *Updated total paths for cell to ${curRow[j]}*`,
+                                        description: `Cell [${i},${j}]: paths = from_top(${fromTop}) + from_left(${fromLeft}) = ${curRow[j]}.\nAggregate update: Recorded total paths for this cell as ${curRow[j]}`,
 					metrics: {
 						Row: i,
 						Column: j,
@@ -259,7 +259,7 @@ function uniquePathsWithObstacles(obstacleGrid: number[][]): Trace<DPState> {
                 },
                 focus: [{ type: 'grid-cell', id: `${m - 1},${n - 1}`, role: 'goal' }],
                 globalHighlights: snapshotHighlights({ pathNodes: representativePath, totalPaths: result }),
-                description: `Algorithm complete! Total unique paths from top-left to bottom-right: ${result}. *Final total paths = ${result}*`,
+                description: `Algorithm complete! Total unique paths from top-left to bottom-right: ${result}.\nAggregate summary: Final total paths = ${result}`,
                 metrics: { 'Total Paths': result }
         });
 

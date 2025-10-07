@@ -122,8 +122,8 @@ function swimInRisingWaterTrace(input: { grid: number[][] }): Trace<GridState> {
                 currentMaxElevation = updatedMaxElevation;
                 const maxNote =
                         updatedMaxElevation !== previousMaxElevation
-                                ? `*Updated max time via max(${previousMaxElevation}, ${elevation}) = ${updatedMaxElevation}*`
-                                : `*Checked max(${previousMaxElevation}, ${elevation}) = ${updatedMaxElevation} (unchanged)*`;
+                                ? `Aggregate update: Updated max time via max(${previousMaxElevation}, ${elevation}) = ${updatedMaxElevation}`
+                                : `Aggregate check: Evaluated max(${previousMaxElevation}, ${elevation}) = ${updatedMaxElevation} (unchanged)`;
 
 		// Check if reached destination
 		if (row === n - 1 && col === n - 1) {
@@ -136,7 +136,7 @@ function swimInRisingWaterTrace(input: { grid: number[][] }): Trace<GridState> {
 				},
                                 focus: [{ type: 'grid-cell', id: `${row},${col}`, role: 'goal' }],
                                 globalHighlights: snapshotHighlights(),
-                                description: `Reached destination (${row},${col})! Minimum time required: ${currentMaxElevation}. *Final time = ${currentMaxElevation}*`,
+                                description: `Reached destination (${row},${col})! Minimum time required: ${currentMaxElevation}.\nAggregate summary: Final time = ${currentMaxElevation}`,
                                 metrics: {
                                         '**Final Answer**': currentMaxElevation,
                                         'Grid Size': `${n}×${n}`
@@ -171,7 +171,7 @@ function swimInRisingWaterTrace(input: { grid: number[][] }): Trace<GridState> {
                         desc += ' No new neighbors to explore.';
                 }
 
-                desc += ` ${maxNote}`;
+                desc += `\n${maxNote}`;
 
 		// Capture frame after exploring neighbors
                 frames.push({

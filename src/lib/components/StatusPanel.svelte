@@ -5,7 +5,14 @@
 		controller: PlaybackController;
 	}
 
-	let { controller }: Props = $props();
+        let { controller }: Props = $props();
+
+        const aggregatePrefixes = ['Aggregate update:', 'Aggregate check:', 'Aggregate summary:'];
+
+        const lineClass = (line: string) =>
+                aggregatePrefixes.some((prefix) => line.trim().startsWith(prefix))
+                        ? 'font-semibold italic text-gray-800 dark:text-gray-100'
+                        : '';
 </script>
 
 <div class="bg-gray-100 dark:bg-gray-800 rounded-lg p-4 space-y-3">
@@ -25,10 +32,16 @@
 
 	<!-- Description -->
 	{#if controller.currentFrame}
-		<div class="text-sm">
-			<p class="font-semibold text-gray-700 dark:text-gray-300 mb-1">Description:</p>
-			<p class="text-gray-600 dark:text-gray-400">{controller.currentFrame.description}</p>
-		</div>
+                <div class="text-sm">
+                        <p class="font-semibold text-gray-700 dark:text-gray-300 mb-1">Description:</p>
+                        <div class="space-y-1 text-gray-600 dark:text-gray-400">
+                                {#each controller.currentFrame.description.split('\n') as line, index (index)}
+                                        {#if line.trim().length > 0}
+                                                <p class={`leading-snug ${lineClass(line)}`}>{line}</p>
+                                        {/if}
+                                {/each}
+                        </div>
+                </div>
 
 		<!-- Metrics -->
 		{#if controller.currentFrame.metrics && Object.keys(controller.currentFrame.metrics).length > 0}

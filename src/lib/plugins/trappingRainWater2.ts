@@ -187,8 +187,8 @@ function trapRainWater2(heightMap: number[][]): Trace<GridState> {
 
                                 const aggregateMessage =
                                         trapped > 0
-                                                ? `*Added max(0, ${height} - ${neighborHeight}) = ${trapped} water ⇒ ${previousTotal} → ${updatedTotal}*`
-                                                : `*Checked max(0, ${height} - ${neighborHeight}) = 0 ⇒ total stays ${updatedTotal}*`;
+                                                ? `Aggregate update: Added max(0, ${height} - ${neighborHeight}) = ${trapped} water ⇒ ${previousTotal} → ${updatedTotal}`
+                                                : `Aggregate check: Evaluated max(0, ${height} - ${neighborHeight}) = 0 ⇒ total remains ${updatedTotal}`;
                                 aggregateNotes.push(aggregateMessage);
 
                                 heap.push({
@@ -211,7 +211,7 @@ function trapRainWater2(heightMap: number[][]): Trace<GridState> {
                 }
 
                 if (aggregateNotes.length > 0) {
-                        desc += ` ${aggregateNotes.join(' ')}`;
+                        desc += `\n${aggregateNotes.join('\n')}`;
                 }
 
                 frames.push({
@@ -244,7 +244,7 @@ function trapRainWater2(heightMap: number[][]): Trace<GridState> {
                         heap: []
                 },
                 globalHighlights: snapshotHighlights(),
-                description: `Algorithm complete! Total water trapped: ${totalWater} units. *Final total water = ${totalWater}*`,
+                description: `Algorithm complete! Total water trapped: ${totalWater} units.\nAggregate summary: Final total water = ${totalWater}`,
                 metrics: { 'Total Water': totalWater }
         });
 
