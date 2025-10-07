@@ -1,16 +1,11 @@
 <script lang="ts">
-        import type { Frame, HighlightRole } from '$lib/types';
+        import type { Frame, HighlightRole, GlobalHighlight } from '$lib/types';
         import type { GridState } from '$lib/types/state';
         import { HIGHLIGHT_COLOR_TOKENS, type HighlightTokens } from '$lib/theme/colorTokens';
 
         interface GlobalHighlightBadge {
                 role: HighlightRole;
-                isPrimary: boolean;
-                weight?: {
-                        value: number;
-                        label?: string;
-                        unit?: string;
-                };
+                weight: NonNullable<GlobalHighlight['weight']>;
         }
 
         interface Props {
@@ -40,24 +35,28 @@
                 cellHighlightTokens = map;
         });
 
+        let globalHighlightRoles = $state(new Map<string, HighlightRole>());
         let globalHighlightBadges = $state(new Map<string, GlobalHighlightBadge[]>());
         $effect(() => {
-                const map = new Map<string, GlobalHighlightBadge[]>();
+                const roleMap = new Map<string, HighlightRole>();
+                const badgeMap = new Map<string, GlobalHighlightBadge[]>();
+
                 if (frame?.globalHighlights) {
                         frame.globalHighlights.forEach((highlight) => {
                                 highlight.nodes.forEach((nodeId, index) => {
-                                        const badges = map.get(nodeId) ?? [];
-                                        badges.push({
-                                                role: highlight.role,
-                                                isPrimary: index === 0,
-                                                weight: highlight.weight
-                                        });
-                                        map.set(nodeId, badges);
+                                        roleMap.set(nodeId, highlight.role);
+
+                                        if (highlight.weight && index === 0) {
+                                                const badges = badgeMap.get(nodeId) ?? [];
+                                                badges.push({ role: highlight.role, weight: highlight.weight });
+                                                badgeMap.set(nodeId, badges);
+                                        }
                                 });
                         });
                 }
 
-                globalHighlightBadges = map;
+                globalHighlightRoles = roleMap;
+                globalHighlightBadges = badgeMap;
         });
 
         const highlightRingBase =
@@ -72,9 +71,9 @@
                 const direct = cellHighlightTokens.get(cellId);
                 if (direct) return direct;
 
-                const global = globalHighlightBadges.get(cellId);
-                if (global && global.length > 0) {
-                        return HIGHLIGHT_COLOR_TOKENS[global[0].role];
+                const globalRole = globalHighlightRoles.get(cellId);
+                if (globalRole) {
+                        return HIGHLIGHT_COLOR_TOKENS[globalRole];
                 }
 
                 if (frame.state.visited?.[rowIdx]?.[colIdx]) {
@@ -150,13 +149,9 @@
         }
 
         function formatBadgeLabel(badge: GlobalHighlightBadge): string {
-                if (badge.isPrimary && badge.weight) {
-                        const prefix = badge.weight.label ? `${badge.weight.label}: ` : '';
-                        const unit = badge.weight.unit ? ` ${badge.weight.unit}` : '';
-                        return `${prefix}${badge.weight.value}${unit}`;
-                }
-
-                return '•';
+                const prefix = badge.weight.label ? `${badge.weight.label}: ` : '';
+                const unit = badge.weight.unit ? ` ${badge.weight.unit}` : '';
+                return `${prefix}${badge.weight.value}${unit}`;
         }
 </script>
 
