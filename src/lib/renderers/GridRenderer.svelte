@@ -21,42 +21,43 @@
 
         let { frame, heightMap, mode = 'height' }: Props = $props();
 
-        const cellHighlightTokens = $derived(() => {
+        let cellHighlightTokens = $state(new Map<string, HighlightTokens>());
+        $effect(() => {
                 const map = new Map<string, HighlightTokens>();
-                if (!frame) return map;
+                if (frame) {
+                        const registerMarker = (marker: NonNullable<Frame['focus']>[number]) => {
+                                if (!map.has(marker.id)) {
+                                        map.set(marker.id, HIGHLIGHT_COLOR_TOKENS[marker.role]);
+                                }
+                        };
 
-                const registerMarker = (marker: NonNullable<Frame['focus']>[number]) => {
-                        if (!map.has(marker.id)) {
+                        frame.neighbors?.forEach(registerMarker);
+                        frame.focus?.forEach((marker) => {
                                 map.set(marker.id, HIGHLIGHT_COLOR_TOKENS[marker.role]);
-                        }
-                };
+                        });
+                }
 
-                frame.neighbors?.forEach(registerMarker);
-
-                frame.focus?.forEach((marker) => {
-                        map.set(marker.id, HIGHLIGHT_COLOR_TOKENS[marker.role]);
-                });
-
-                return map;
+                cellHighlightTokens = map;
         });
 
-        const globalHighlightBadges = $derived(() => {
+        let globalHighlightBadges = $state(new Map<string, GlobalHighlightBadge[]>());
+        $effect(() => {
                 const map = new Map<string, GlobalHighlightBadge[]>();
-                if (!frame?.globalHighlights) return map;
-
-                frame.globalHighlights.forEach((highlight) => {
-                        highlight.nodes.forEach((nodeId, index) => {
-                                const badges = map.get(nodeId) ?? [];
-                                badges.push({
-                                        role: highlight.role,
-                                        isPrimary: index === 0,
-                                        weight: highlight.weight
+                if (frame?.globalHighlights) {
+                        frame.globalHighlights.forEach((highlight) => {
+                                highlight.nodes.forEach((nodeId, index) => {
+                                        const badges = map.get(nodeId) ?? [];
+                                        badges.push({
+                                                role: highlight.role,
+                                                isPrimary: index === 0,
+                                                weight: highlight.weight
+                                        });
+                                        map.set(nodeId, badges);
                                 });
-                                map.set(nodeId, badges);
                         });
-                });
+                }
 
-                return map;
+                globalHighlightBadges = map;
         });
 
         const highlightRingBase =
