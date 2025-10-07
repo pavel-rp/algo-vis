@@ -1,9 +1,7 @@
 <script lang="ts">
         import type { Frame, HighlightRole } from '$lib/types';
         import type { GridState } from '$lib/types/state';
-        import { HIGHLIGHT_COLOR_TOKENS } from '$lib/theme/colorTokens';
-
-        type HighlightTokens = (typeof HIGHLIGHT_COLOR_TOKENS)[HighlightRole];
+        import { HIGHLIGHT_COLOR_TOKENS, type HighlightTokens } from '$lib/theme/colorTokens';
 
         interface GlobalHighlightBadge {
                 role: HighlightRole;
@@ -165,10 +163,10 @@
 	{#if heightMap.length === 0}
 		<div class="text-gray-500 text-center py-8">No grid data available</div>
 	{:else}
-		<div
-			class="grid gap-0.5 w-fit mx-auto"
-			style="grid-template-columns: repeat({heightMap[0].length}, 40px);"
-		>
+                <div
+                        class="grid gap-0.5 w-fit mx-auto"
+                        style:grid-template-columns={`repeat(${heightMap[0].length}, 40px)`}
+                >
 			{#each heightMap as row, rowIdx}
 				{#each row as height, colIdx}
 					{@const water = getWaterHeight(rowIdx, colIdx)}
@@ -176,10 +174,10 @@
 					{@const isObstacle = mode === 'obstacle' && height === 1}
                                         {@const badges = getGlobalBadges(rowIdx, colIdx)}
                                         <div
-                                                class="relative w-10 h-10 flex flex-col items-center justify-center rounded transition-colors {getCellClasses(
+                                                class={`relative w-10 h-10 flex flex-col items-center justify-center rounded transition-colors ${getCellClasses(
                                                         rowIdx,
                                                         colIdx
-                                                )}"
+                                                )}`}
                                         >
                                                 <!-- Cell value (height, obstacle marker, or DP value) -->
                                                 <span
@@ -199,7 +197,7 @@
 
                                                 {#if badges.length > 0}
                                                         <div class="pointer-events-none absolute inset-0 z-20 flex flex-wrap items-start justify-end gap-0.5 p-0.5">
-                                                                {#each badges as badge, badgeIdx}
+                                                                {#each badges as badge}
                                                                         <span
                                                                                 class={`inline-flex min-w-[16px] items-center justify-center rounded-full px-1.5 py-0.5 text-[9px] font-semibold whitespace-nowrap ${getBadgeClasses(
                                                                                         badge.role
