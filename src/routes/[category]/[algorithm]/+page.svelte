@@ -172,23 +172,25 @@
 		</div>
 
 		<!-- Main content -->
-		<div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
-			<!-- Visualization -->
-			<div class="lg:col-span-2 bg-white dark:bg-gray-800 rounded-lg shadow overflow-hidden">
-				<GridRenderer frame={controller.currentFrame} heightMap={gridData} mode={gridMode} />
-			</div>
+                <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+                        <!-- Visualization -->
+                        <div class="lg:col-span-2 space-y-4">
+                                <div class="bg-white dark:bg-gray-800 rounded-lg shadow overflow-hidden">
+                                        <GridRenderer frame={controller.currentFrame} heightMap={gridData} mode={gridMode} />
+                                </div>
 
-			<!-- Right sidebar -->
-			<div class="space-y-6">
                                 <!-- Legend -->
                                 <LegendPanel extraGroups={legendGroups} />
+                        </div>
 
+                        <!-- Right sidebar -->
+                        <div class="space-y-6">
                                 <!-- Status Panel -->
                                 <div class="bg-white dark:bg-gray-800 rounded-lg shadow p-6">
                                         <StatusPanel {controller} />
                                 </div>
 
-				<!-- Priority Queue Display (conditionally) -->
+                                <!-- Priority Queue Display (conditionally) -->
 				{#if usesPriorityQueue && queueData}
 					<PriorityQueueDisplay items={queueData.items} remainingCount={queueData.remainingCount} />
 				{/if}
