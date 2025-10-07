@@ -76,28 +76,54 @@ function swimInRisingWaterTrace(input: { grid: number[][] }): Trace<GridState> {
 	visited[0][0] = true;
 	heap.push({ elevation: grid[0][0], row: 0, col: 0 });
 
-	frames.push({
-		step: step++,
-		state: {
-			grid: grid.map((row) => [...row]),
-			visited: visited.map((row) => [...row]),
-			heap: heap.toArray()
-		},
-		focus: [{ type: 'grid-cell', id: '0,0' }],
-		description: `Starting at cell (0,0) with elevation ${grid[0][0]}. This is our entry point.`,
-		metrics: {
-			'Current Time': currentMaxElevation,
-			'Queue Size': heap.size()
-		}
+        const snapshotHighlights = () => {
+                const highlights: NonNullable<Frame<GridState>['globalHighlights']> = [];
+                const visitedNodes = visited
+                        .map((row, i) => row.map((isVisited, j) => (isVisited ? `${i},${j}` : null)))
+                        .flat()
+                        .filter((id): id is string => Boolean(id));
+                const queueNodes = heap
+                        .toArray()
+                        .map((item) => `${item.row},${item.col}`);
+
+                if (visitedNodes.length > 0) {
+                        highlights.push({ role: 'visited', nodes: visitedNodes });
+                }
+                if (queueNodes.length > 0) {
+                        highlights.push({ role: 'queued', nodes: queueNodes });
+                }
+
+                return highlights.length > 0 ? highlights : undefined;
+        };
+
+        frames.push({
+                step: step++,
+                state: {
+                        grid: grid.map((row) => [...row]),
+                        visited: visited.map((row) => [...row]),
+                        heap: heap.toArray()
+                },
+                focus: [{ type: 'grid-cell', id: '0,0', role: 'start' }],
+                globalHighlights: snapshotHighlights(),
+                description: `Starting at cell (0,0) with elevation ${grid[0][0]}. This is our entry point.`,
+                metrics: {
+                        'Current Time': currentMaxElevation,
+                        'Queue Size': heap.size()
+                }
 	});
 
 	// BFS with priority queue
-	while (!heap.isEmpty()) {
-		const current = heap.pop()!;
-		const { row, col, elevation } = current;
+        while (!heap.isEmpty()) {
+                const current = heap.pop()!;
+                const { row, col, elevation } = current;
 
-		// Update maximum elevation (the time we need to wait)
-		currentMaxElevation = Math.max(currentMaxElevation, elevation);
+                const previousMaxElevation = currentMaxElevation;
+                const updatedMaxElevation = Math.max(previousMaxElevation, elevation);
+                currentMaxElevation = updatedMaxElevation;
+                const maxNote =
+                        updatedMaxElevation !== previousMaxElevation
+                                ? `Aggregate update: Updated max time via max(${previousMaxElevation}, ${elevation}) = ${updatedMaxElevation}`
+                                : `Aggregate check: Evaluated max(${previousMaxElevation}, ${elevation}) = ${updatedMaxElevation} (unchanged)`;
 
 		// Check if reached destination
 		if (row === n - 1 && col === n - 1) {
@@ -108,12 +134,13 @@ function swimInRisingWaterTrace(input: { grid: number[][] }): Trace<GridState> {
 					visited: visited.map((row) => [...row]),
 					heap: []
 				},
-				focus: [{ type: 'grid-cell', id: `${row},${col}` }],
-				description: `Reached destination (${row},${col})! Minimum time required: ${currentMaxElevation}`,
-				metrics: {
-					'**Final Answer**': currentMaxElevation,
-					'Grid Size': `${n}×${n}`
-				}
+                                focus: [{ type: 'grid-cell', id: `${row},${col}`, role: 'goal' }],
+                                globalHighlights: snapshotHighlights(),
+                                description: `Reached destination (${row},${col})! Minimum time required: ${currentMaxElevation}.\nAggregate summary: Final time = ${currentMaxElevation}`,
+                                metrics: {
+                                        '**Final Answer**': currentMaxElevation,
+                                        'Grid Size': `${n}×${n}`
+                                }
 			});
 			break;
 		}
@@ -130,35 +157,44 @@ function swimInRisingWaterTrace(input: { grid: number[][] }): Trace<GridState> {
 			if (newRow >= 0 && newRow < n && newCol >= 0 && newCol < n && !visited[newRow][newCol]) {
 				visited[newRow][newCol] = true;
 				heap.push({ elevation: grid[newRow][newCol], row: newRow, col: newCol });
-				neighbors.push({ type: 'grid-cell' as const, id: `${newRow},${newCol}` });
-				neighborCells.push({ row: newRow, col: newCol, elev: grid[newRow][newCol] });
-			}
-		}
+                                neighbors.push({ type: 'grid-cell' as const, id: `${newRow},${newCol}`, role: 'frontier' });
+                                neighborCells.push({ row: newRow, col: newCol, elev: grid[newRow][newCol] });
+                        }
+                }
 
-		// Create description
-		let desc = `Processing cell (${row},${col}) with elevation ${elevation}.`;
-		if (neighbors.length > 0) {
-			desc += ` Found ${neighbors.length} unvisited neighbor(s): `;
-			desc += neighborCells.map((c) => `(${c.row},${c.col})→${c.elev}`).join(', ');
-		} else {
-			desc += ' No new neighbors to explore.';
-		}
+                // Create description
+                let desc = `Processing cell (${row},${col}) with elevation ${elevation}.`;
+                if (neighbors.length > 0) {
+                        desc += ` Found ${neighbors.length} unvisited neighbor(s): `;
+                        desc += neighborCells.map((c) => `(${c.row},${c.col})→${c.elev}`).join(', ');
+                } else {
+                        desc += ' No new neighbors to explore.';
+                }
+
+                desc += `\n${maxNote}`;
 
 		// Capture frame after exploring neighbors
-		frames.push({
-			step: step++,
-			state: {
-				grid: grid.map((row) => [...row]),
-				visited: visited.map((row) => [...row]),
-				heap: heap.toArray()
-			},
-			focus: [{ type: 'grid-cell', id: `${row},${col}` }],
-			neighbors: neighbors.length > 0 ? neighbors : undefined,
-			description: desc,
-			metrics: {
-				'Current Time': currentMaxElevation,
-				'Current Cell': `(${row},${col})`,
-				'Cell Elevation': elevation,
+                frames.push({
+                        step: step++,
+                        state: {
+                                grid: grid.map((row) => [...row]),
+                                visited: visited.map((row) => [...row]),
+                                heap: heap.toArray()
+                        },
+                        focus: [
+                                {
+                                        type: 'grid-cell',
+                                        id: `${row},${col}`,
+                                        role: row === n - 1 && col === n - 1 ? 'goal' : 'current'
+                                }
+                        ],
+                        neighbors: neighbors.length > 0 ? neighbors : undefined,
+                        globalHighlights: snapshotHighlights(),
+                        description: desc,
+                        metrics: {
+                                'Current Time': currentMaxElevation,
+                                'Current Cell': `(${row},${col})`,
+                                'Cell Elevation': elevation,
 				'Queue Size': heap.size()
 			}
 		});

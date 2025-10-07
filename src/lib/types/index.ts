@@ -1,13 +1,17 @@
 // Re-export all types for clean imports
 export type {
-	AlgorithmPlugin,
-	Frame,
-	Trace,
-	FocusMarker,
-	InputPreset,
-	CodeDefinition,
-	ValidationResult
+        AlgorithmPlugin,
+        Frame,
+        Trace,
+        FocusMarker,
+        GlobalHighlight,
+        HighlightRole,
+        InputPreset,
+        CodeDefinition,
+        ValidationResult
 } from './plugin';
+
+export { HIGHLIGHT_ROLES } from './plugin';
 
 export type { GridState } from './state';
 

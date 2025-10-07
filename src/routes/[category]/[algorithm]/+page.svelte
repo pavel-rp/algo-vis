@@ -53,26 +53,55 @@
 	});
 
 	// Format priority queue data for display
-	let queueData = $derived.by(() => {
-		const frame = controller.currentFrame;
-		if (!frame || !frame.state.heap) return null;
+        let queueData = $derived.by(() => {
+                const frame = controller.currentFrame;
+                if (!frame || !frame.state.heap) return null;
 
-		const heap = frame.state.heap;
-		if (!Array.isArray(heap) || heap.length === 0) return null;
+                const heap = frame.state.heap;
+                if (!Array.isArray(heap) || heap.length === 0) return null;
 
-		// Sort by elevation (priority) and take top 5
-		const sorted = [...heap].sort((a, b) => a.elevation - b.elevation);
-		const topItems = sorted.slice(0, 5).map((item) => ({
-			priority: item.elevation,
-			label: `(${item.row},${item.col})`,
-			data: item
-		}));
+                const normalizeQueueItem = (item: any) => {
+                        const prioritySources = ['priority', 'elevation', 'height', 'value'];
+                        let priority: number | null = null;
+                        for (const key of prioritySources) {
+                                const candidate = item?.[key];
+                                if (typeof candidate === 'number' && Number.isFinite(candidate)) {
+                                        priority = candidate;
+                                        break;
+                                }
+                        }
 
-		return {
-			items: topItems,
-			remainingCount: Math.max(0, sorted.length - topItems.length)
-		};
-	});
+                        if (priority === null) {
+                                return null;
+                        }
+
+                        const row = typeof item?.row === 'number' ? item.row : item?.position?.row;
+                        const col = typeof item?.col === 'number' ? item.col : item?.position?.col;
+                        const label = row !== undefined && col !== undefined ? `(${row},${col})` : `${priority}`;
+
+                        return {
+                                priority,
+                                label,
+                                data: item
+                        };
+                };
+
+                const normalized = [...heap]
+                        .map((item) => normalizeQueueItem(item))
+                        .filter((item): item is NonNullable<ReturnType<typeof normalizeQueueItem>> => Boolean(item));
+
+                if (normalized.length === 0) {
+                        return null;
+                }
+
+                const sorted = normalized.sort((a, b) => a.priority - b.priority);
+                const topItems = sorted.slice(0, 5);
+
+                return {
+                        items: topItems,
+                        remainingCount: Math.max(0, sorted.length - topItems.length)
+                };
+        });
 
 	// Check if algorithm uses priority queue
 	let usesPriorityQueue = $derived(

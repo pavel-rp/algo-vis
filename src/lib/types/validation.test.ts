@@ -34,43 +34,60 @@ describe('validation', () => {
 			expect(() => FrameSchema.parse(invalidFrame)).toThrow();
 		});
 
-		it('should allow optional focus and neighbors', () => {
-			const frameWithMarkers = {
-				step: 0,
-				state: {},
-				focus: [{ type: 'grid-cell' as const, id: '0,0' }],
-				neighbors: [{ type: 'grid-cell' as const, id: '0,1' }],
-				description: 'With markers'
-			};
+                it('should allow optional focus and neighbors', () => {
+                        const frameWithMarkers = {
+                                step: 0,
+                                state: {},
+                                focus: [{ type: 'grid-cell' as const, id: '0,0', role: 'current' as const }],
+                                neighbors: [{ type: 'grid-cell' as const, id: '0,1', role: 'frontier' as const }],
+                                description: 'With markers'
+                        };
 
-			expect(() => FrameSchema.parse(frameWithMarkers)).not.toThrow();
+                        expect(() => FrameSchema.parse(frameWithMarkers)).not.toThrow();
+                });
+
+                it('should validate focus marker types', () => {
+                        const validTypes = ['grid-cell', 'array-index', 'tree-node', 'graph-node'];
+
+                        validTypes.forEach((type) => {
+                                const frame = {
+                                        step: 0,
+                                        state: {},
+                                        focus: [{ type, id: 'test', role: 'auxiliary' as const }],
+                                        description: 'Test'
+                                };
+
+                                expect(() => FrameSchema.parse(frame)).not.toThrow();
+                        });
 		});
 
-		it('should validate focus marker types', () => {
-			const validTypes = ['grid-cell', 'array-index', 'tree-node', 'graph-node'];
+                it('should reject invalid focus marker type', () => {
+                        const frame = {
+                                step: 0,
+                                state: {},
+                                focus: [{ type: 'invalid-type', id: 'test', role: 'current' as const }],
+                                description: 'Test'
+                        };
 
-			validTypes.forEach((type) => {
-				const frame = {
-					step: 0,
-					state: {},
-					focus: [{ type, id: 'test' }],
-					description: 'Test'
-				};
+                        expect(() => FrameSchema.parse(frame)).toThrow();
+                });
 
-				expect(() => FrameSchema.parse(frame)).not.toThrow();
-			});
-		});
+                it('should allow global highlights with weight metadata', () => {
+                        const frameWithHighlights = {
+                                step: 0,
+                                state: {},
+                                description: 'With highlights',
+                                globalHighlights: [
+                                        {
+                                                role: 'path-final' as const,
+                                                nodes: ['0,0', '0,1'],
+                                                weight: { label: 'Total', value: 2 }
+                                        }
+                                ]
+                        };
 
-		it('should reject invalid focus marker type', () => {
-			const frame = {
-				step: 0,
-				state: {},
-				focus: [{ type: 'invalid-type', id: 'test' }],
-				description: 'Test'
-			};
-
-			expect(() => FrameSchema.parse(frame)).toThrow();
-		});
+                        expect(() => FrameSchema.parse(frameWithHighlights)).not.toThrow();
+                });
 
 		it('should allow optional metrics', () => {
 			const frameWithMetrics = {

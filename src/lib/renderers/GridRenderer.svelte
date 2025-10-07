@@ -1,45 +1,101 @@
 <script lang="ts">
-	import type { Frame } from '$lib/types';
-	import type { GridState } from '$lib/types/state';
+        import type { Frame, HighlightRole } from '$lib/types';
+        import type { GridState } from '$lib/types/state';
+        import { HIGHLIGHT_COLOR_TOKENS, type HighlightTokens } from '$lib/theme/colorTokens';
 
-	interface Props {
-		frame: Frame<GridState> | null;
-		heightMap: number[][];
-		mode?: 'height' | 'obstacle' | 'dp'; // Display mode
-	}
+        interface Props {
+                frame: Frame<GridState> | null;
+                heightMap: number[][];
+                mode?: 'height' | 'obstacle' | 'dp'; // Display mode
+        }
 
-	let { frame, heightMap, mode = 'height' }: Props = $props();
+        let { frame, heightMap, mode = 'height' }: Props = $props();
 
-	// Compute cell styling based on focus/neighbors
-	function getCellClasses(rowIdx: number, colIdx: number): string {
-		if (!frame) return 'bg-gray-100 dark:bg-gray-800';
+        let cellHighlightTokens = $state(new Map<string, HighlightTokens>());
+        $effect(() => {
+                const map = new Map<string, HighlightTokens>();
+                if (frame) {
+                        const registerMarker = (marker: NonNullable<Frame['focus']>[number]) => {
+                                if (!map.has(marker.id)) {
+                                        map.set(marker.id, HIGHLIGHT_COLOR_TOKENS[marker.role]);
+                                }
+                        };
 
-		const cellId = `${rowIdx},${colIdx}`;
-		const isFocus = frame.focus?.some((f) => f.id === cellId);
-		const isNeighbor = frame.neighbors?.some((n) => n.id === cellId);
-		const isVisited = frame.state.visited?.[rowIdx]?.[colIdx];
-		const isObstacle = mode === 'obstacle' && heightMap[rowIdx][colIdx] === 1;
+                        frame.neighbors?.forEach(registerMarker);
+                        frame.focus?.forEach((marker) => {
+                                map.set(marker.id, HIGHLIGHT_COLOR_TOKENS[marker.role]);
+                        });
+                }
 
-		if (isObstacle) return 'bg-gray-800 dark:bg-gray-900 border-2 border-gray-600';
-		if (isFocus) return 'bg-[var(--cell-focus)] border-2 border-orange-600';
-		if (isNeighbor) return 'bg-[var(--cell-neighbor)] border-2 border-green-600';
-		if (isVisited) return 'bg-[var(--cell-visited)] border border-blue-400';
-		return 'bg-gray-100 dark:bg-gray-700 border border-gray-300 dark:border-gray-600';
-	}
+                cellHighlightTokens = map;
+        });
 
-	function getWaterHeight(rowIdx: number, colIdx: number): number {
-		return frame?.state.water?.[rowIdx]?.[colIdx] ?? 0;
-	}
+        let globalHighlightRoles = $state(new Map<string, HighlightRole>());
+        $effect(() => {
+                const roleMap = new Map<string, HighlightRole>();
 
-	function getDPValue(rowIdx: number, colIdx: number): number | null {
-		return frame?.state.dp?.[rowIdx]?.[colIdx] ?? null;
-	}
+                if (frame?.globalHighlights) {
+                        frame.globalHighlights.forEach((highlight) => {
+                                highlight.nodes.forEach((nodeId) => {
+                                        roleMap.set(nodeId, highlight.role);
+                                });
+                        });
+                }
 
-	function getCellDisplay(rowIdx: number, colIdx: number): string {
-		const isObstacle = heightMap[rowIdx][colIdx] === 1;
+                globalHighlightRoles = roleMap;
+        });
 
-		if (mode === 'obstacle') {
-			const dpVal = getDPValue(rowIdx, colIdx);
+        const highlightRingBase =
+                'border border-transparent ring-2 ring-offset-1 ring-offset-gray-100 dark:ring-offset-gray-800 shadow-sm';
+        const defaultCellClasses = 'bg-gray-100 dark:bg-gray-700 border border-gray-300 dark:border-gray-600';
+        const inactiveCellClasses = 'bg-gray-100 dark:bg-gray-800 border border-gray-200 dark:border-gray-700';
+
+        function getCellHighlightTokens(rowIdx: number, colIdx: number): HighlightTokens | null {
+                if (!frame) return null;
+                const cellId = `${rowIdx},${colIdx}`;
+
+                const direct = cellHighlightTokens.get(cellId);
+                if (direct) return direct;
+
+                const globalRole = globalHighlightRoles.get(cellId);
+                if (globalRole) {
+                        return HIGHLIGHT_COLOR_TOKENS[globalRole];
+                }
+
+                if (frame.state.visited?.[rowIdx]?.[colIdx]) {
+                        return HIGHLIGHT_COLOR_TOKENS.visited;
+                }
+
+                return null;
+        }
+
+        // Compute cell styling based on focus/neighbors
+        function getCellClasses(rowIdx: number, colIdx: number): string {
+                if (!frame) return inactiveCellClasses;
+
+                const isObstacle = mode === 'obstacle' && heightMap[rowIdx][colIdx] === 1;
+                if (isObstacle) {
+                        const obstacleTokens = HIGHLIGHT_COLOR_TOKENS.obstacle;
+                        return `${obstacleTokens.fill} ${highlightRingBase} ${obstacleTokens.border}`;
+                }
+
+                const tokens = getCellHighlightTokens(rowIdx, colIdx);
+                if (tokens) {
+                        return `${tokens.fill} ${highlightRingBase} ${tokens.border}`;
+                }
+
+                return defaultCellClasses;
+        }
+
+        function getDPValue(rowIdx: number, colIdx: number): number | null {
+                return frame?.state.dp?.[rowIdx]?.[colIdx] ?? null;
+        }
+
+        function getCellDisplay(rowIdx: number, colIdx: number): string {
+                const isObstacle = heightMap[rowIdx][colIdx] === 1;
+
+                if (mode === 'obstacle') {
+                        const dpVal = getDPValue(rowIdx, colIdx);
 			if (isObstacle) {
 				return '🚫';
 			}
@@ -48,52 +104,52 @@
 		} else if (mode === 'dp') {
 			const dpVal = getDPValue(rowIdx, colIdx);
 			return dpVal !== null ? String(dpVal) : '';
-		}
-		return String(heightMap[rowIdx][colIdx]);
-	}
+                }
+                return String(heightMap[rowIdx][colIdx]);
+        }
+
+        function getCellTextClass(rowIdx: number, colIdx: number, isObstacle: boolean): string {
+                const tokens = getCellHighlightTokens(rowIdx, colIdx);
+                if (tokens) {
+                        return tokens.text;
+                }
+                if (isObstacle) {
+                        return HIGHLIGHT_COLOR_TOKENS.obstacle.text;
+                }
+                return 'text-gray-900 dark:text-white';
+        }
+
 </script>
 
 <div class="grid-container overflow-auto p-4">
 	{#if heightMap.length === 0}
 		<div class="text-gray-500 text-center py-8">No grid data available</div>
 	{:else}
-		<div
-			class="grid gap-0.5 w-fit mx-auto"
-			style="grid-template-columns: repeat({heightMap[0].length}, 40px);"
-		>
-			{#each heightMap as row, rowIdx}
-				{#each row as height, colIdx}
-					{@const water = getWaterHeight(rowIdx, colIdx)}
-					{@const cellDisplay = getCellDisplay(rowIdx, colIdx)}
-					{@const isObstacle = mode === 'obstacle' && height === 1}
-					<div
-						class="relative w-10 h-10 flex flex-col items-center justify-center rounded transition-colors {getCellClasses(
-							rowIdx,
-							colIdx
-						)}"
-					>
-						<!-- Cell value (height, obstacle marker, or DP value) -->
-						<span
-							class="text-[11px] font-semibold z-10 {isObstacle
-								? 'text-white'
-								: 'text-gray-900 dark:text-white'}"
-						>
-							{cellDisplay}
-						</span>
-
-						<!-- Water overlay (for water algorithms) -->
-						{#if mode === 'height' && water > 0}
-							<div
-								class="absolute inset-0 bg-[var(--cell-water)] opacity-40 rounded flex items-end justify-center pb-0.5"
-							>
-								<span class="text-[10px] font-bold text-cyan-900">💧{water}</span>
-							</div>
-						{/if}
-					</div>
-				{/each}
-			{/each}
-		</div>
-	{/if}
+                <div
+                        class="grid gap-1 w-fit mx-auto"
+                        style:grid-template-columns={`repeat(${heightMap[0].length}, 40px)`}
+                >
+                        {#each heightMap as row, rowIdx}
+                                {#each row as height, colIdx}
+                                        {@const cellDisplay = getCellDisplay(rowIdx, colIdx)}
+                                        {@const isObstacle = mode === 'obstacle' && height === 1}
+                                        <div
+                                                class={`relative w-10 h-10 flex flex-col items-center justify-center rounded transition-colors ${getCellClasses(
+                                                        rowIdx,
+                                                        colIdx
+                                                )}`}
+                                        >
+                                                <!-- Cell value (height, obstacle marker, or DP value) -->
+                                                <span
+                                                        class={`text-[11px] font-semibold z-10 ${getCellTextClass(rowIdx, colIdx, isObstacle)}`}
+                                                >
+                                                        {cellDisplay}
+                                                </span>
+                                        </div>
+                                {/each}
+                        {/each}
+                </div>
+        {/if}
 </div>
 
 <style>

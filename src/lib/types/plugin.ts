@@ -5,19 +5,48 @@
  * Based on contracts/plugin-interface.ts from design docs.
  */
 
+export const HIGHLIGHT_ROLES = [
+        'start',
+        'goal',
+        'current',
+        'frontier',
+        'queued',
+        'visited',
+        'path-active',
+        'path-final',
+        'obstacle',
+        'weight-peek',
+        'auxiliary'
+] as const;
+
+export type HighlightRole = (typeof HIGHLIGHT_ROLES)[number];
+
 export interface FocusMarker {
-	type: 'grid-cell' | 'array-index' | 'tree-node' | 'graph-node';
-	id: string;
-	style?: Record<string, any>;
+        type: 'grid-cell' | 'array-index' | 'tree-node' | 'graph-node';
+        id: string;
+        role: HighlightRole;
+        style?: Record<string, any>;
+}
+
+export interface GlobalHighlight {
+        role: HighlightRole;
+        nodes: string[];
+        weight?: {
+                value: number;
+                label?: string;
+                unit?: string;
+        };
+        metadata?: Record<string, any>;
 }
 
 export interface Frame<TState = any> {
-	step: number;
-	state: TState;
-	focus?: FocusMarker[];
-	neighbors?: FocusMarker[];
-	metrics?: Record<string, number | string>;
-	description: string;
+        step: number;
+        state: TState;
+        focus?: FocusMarker[];
+        neighbors?: FocusMarker[];
+        globalHighlights?: GlobalHighlight[];
+        metrics?: Record<string, number | string>;
+        description: string;
 }
 
 export interface Trace<TState = any> {

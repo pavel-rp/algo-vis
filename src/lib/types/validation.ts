@@ -1,22 +1,38 @@
 import { z } from 'zod';
-import type { Frame, Trace, AlgorithmPlugin } from './plugin';
+import type { Frame, Trace } from './plugin';
+import { HIGHLIGHT_ROLES } from './plugin';
+
+const HighlightRoleSchema = z.enum(HIGHLIGHT_ROLES);
+
+const FocusMarkerSchema = z.object({
+        type: z.enum(['grid-cell', 'array-index', 'tree-node', 'graph-node']),
+        id: z.string(),
+        role: HighlightRoleSchema,
+        style: z.record(z.any()).optional()
+});
+
+const GlobalHighlightSchema = z.object({
+        role: HighlightRoleSchema,
+        nodes: z.array(z.string()).min(1),
+        weight: z
+                .object({
+                        value: z.number(),
+                        label: z.string().optional(),
+                        unit: z.string().optional()
+                })
+                .optional(),
+        metadata: z.record(z.any()).optional()
+});
 
 /** Zod schema for Frame validation */
 export const FrameSchema = z.object({
-	step: z.number().int().nonnegative(),
-	state: z.any(),
-	focus: z.array(z.object({
-		type: z.enum(['grid-cell', 'array-index', 'tree-node', 'graph-node']),
-		id: z.string(),
-		style: z.record(z.any()).optional()
-	})).optional(),
-	neighbors: z.array(z.object({
-		type: z.enum(['grid-cell', 'array-index', 'tree-node', 'graph-node']),
-		id: z.string(),
-		style: z.record(z.any()).optional()
-	})).optional(),
-	metrics: z.record(z.union([z.number(), z.string()])).optional(),
-	description: z.string().min(1)
+        step: z.number().int().nonnegative(),
+        state: z.any(),
+        focus: z.array(FocusMarkerSchema).optional(),
+        neighbors: z.array(FocusMarkerSchema).optional(),
+        globalHighlights: z.array(GlobalHighlightSchema).optional(),
+        metrics: z.record(z.union([z.number(), z.string()])).optional(),
+        description: z.string().min(1)
 });
 
 /** Zod schema for Trace validation */
