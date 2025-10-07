@@ -49,6 +49,7 @@ export interface AlgorithmPlugin<TInput = any, TState = any> {
 	name: string;
 	description: string;
 	category: string;
+	subcategory?: string; // Feature 004: Optional subcategory for navigation tree
 	visualizationType: 'grid' | 'array' | 'tree' | 'graph';
 	presets: InputPreset<TInput>[];
 	trace(input: TInput): Trace<TState>;
