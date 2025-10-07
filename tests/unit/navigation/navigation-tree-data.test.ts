@@ -184,7 +184,7 @@ describe('Navigation Tree Data Structure', () => {
 	});
 
 	describe('initial algorithm content', () => {
-		it('should contain exactly 2 initial algorithms', () => {
+		it('should contain exactly 3 initial algorithms', () => {
 			const algorithms: AlgorithmNode[] = [];
 
 			function collectAlgorithms(nodes: typeof navigationTree.rootNodes): void {
@@ -199,7 +199,7 @@ describe('Navigation Tree Data Structure', () => {
 
 			collectAlgorithms(navigationTree.rootNodes);
 
-			expect(algorithms).toHaveLength(2);
+			expect(algorithms).toHaveLength(3);
 		});
 
 		it('should contain trapping-rain-water-2 algorithm', () => {
@@ -246,6 +246,29 @@ describe('Navigation Tree Data Structure', () => {
 			expect(uniquePaths?.label).toBe('Unique Paths with Obstacles');
 			expect(uniquePaths?.pluginId).toBe('unique-paths-with-obstacles');
 			expect(uniquePaths?.path).toBe('/graphs/unique-paths-with-obstacles');
+		});
+
+		it('should contain swim-in-water algorithm', () => {
+			const algorithms: AlgorithmNode[] = [];
+
+			function collectAlgorithms(nodes: typeof navigationTree.rootNodes): void {
+				for (const node of nodes) {
+					if (isAlgorithmNode(node)) {
+						algorithms.push(node);
+					} else {
+						collectAlgorithms(node.children);
+					}
+				}
+			}
+
+			collectAlgorithms(navigationTree.rootNodes);
+
+			const swimInWater = algorithms.find((a) => a.id === 'swim-in-water');
+
+			expect(swimInWater).toBeDefined();
+			expect(swimInWater?.label).toBe('Swim in Rising Water');
+			expect(swimInWater?.pluginId).toBe('swim-in-water');
+			expect(swimInWater?.path).toBe('/graphs/swim-in-water');
 		});
 	});
 

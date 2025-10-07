@@ -1,6 +1,0 @@
-{
-	"/": [],
-	"/[category]/[algorithm]": [
-		"src/routes/[category]/[algorithm]/+page.ts"
-	]
-}

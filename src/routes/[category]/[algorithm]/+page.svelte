@@ -15,8 +15,10 @@
 	import PlaybackControls from '$lib/components/PlaybackControls.svelte';
 	import SpeedControl from '$lib/components/SpeedControl.svelte';
 	import StatusPanel from '$lib/components/StatusPanel.svelte';
+	import PriorityQueueDisplay from '$lib/components/visualization/PriorityQueueDisplay.svelte';
 	import { trappingRainWater2Plugin } from '$lib/plugins/trappingRainWater2';
 	import { uniquePathsWithObstaclesPlugin } from '$lib/plugins/uniquePathsWithObstacles';
+	import { swimInWaterPlugin } from '$lib/plugins/swimInWater';
 
 	// Props from load function
 	let { data }: { data: PageData } = $props();
@@ -24,7 +26,8 @@
 	// Map plugin IDs to plugin instances
 	const pluginMap = {
 		'trapping-rain-water-2': trappingRainWater2Plugin,
-		'unique-paths-with-obstacles': uniquePathsWithObstaclesPlugin
+		'unique-paths-with-obstacles': uniquePathsWithObstaclesPlugin,
+		'swim-in-water': swimInWaterPlugin
 	} as const;
 
 	// Get algorithm plugin based on pluginId from route
@@ -40,6 +43,40 @@
 	// Grid mode based on algorithm
 	let gridMode = $derived(
 		algorithm.id === 'unique-paths-with-obstacles' ? ('obstacle' as const) : ('height' as const)
+	); // swim-in-water and trapping-rain-water-2 use 'height' mode
+
+	// Extract grid data based on algorithm
+	let gridData = $derived.by(() => {
+		const data = currentPreset.data;
+		// swimInWater has { grid: number[][] }, others have raw number[][]
+		return data.grid ? data.grid : data;
+	});
+
+	// Format priority queue data for display
+	let queueData = $derived.by(() => {
+		const frame = controller.currentFrame;
+		if (!frame || !frame.state.heap) return null;
+
+		const heap = frame.state.heap;
+		if (!Array.isArray(heap) || heap.length === 0) return null;
+
+		// Sort by elevation (priority) and take top 5
+		const sorted = [...heap].sort((a, b) => a.elevation - b.elevation);
+		const topItems = sorted.slice(0, 5).map((item) => ({
+			priority: item.elevation,
+			label: `(${item.row},${item.col})`,
+			data: item
+		}));
+
+		return {
+			items: topItems,
+			remainingCount: Math.max(0, sorted.length - topItems.length)
+		};
+	});
+
+	// Check if algorithm uses priority queue
+	let usesPriorityQueue = $derived(
+		algorithm.id === 'swim-in-water' || algorithm.id === 'trapping-rain-water-2'
 	);
 
 	// Load trace when algorithm or preset changes
@@ -105,12 +142,20 @@
 		<div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
 			<!-- Visualization -->
 			<div class="lg:col-span-2 bg-white dark:bg-gray-800 rounded-lg shadow overflow-hidden">
-				<GridRenderer frame={controller.currentFrame} heightMap={currentPreset.data} mode={gridMode} />
+				<GridRenderer frame={controller.currentFrame} heightMap={gridData} mode={gridMode} />
 			</div>
 
-			<!-- Status Panel -->
-			<div class="bg-white dark:bg-gray-800 rounded-lg shadow p-6">
-				<StatusPanel {controller} />
+			<!-- Right sidebar -->
+			<div class="space-y-6">
+				<!-- Status Panel -->
+				<div class="bg-white dark:bg-gray-800 rounded-lg shadow p-6">
+					<StatusPanel {controller} />
+				</div>
+
+				<!-- Priority Queue Display (conditionally) -->
+				{#if usesPriorityQueue && queueData}
+					<PriorityQueueDisplay items={queueData.items} remainingCount={queueData.remainingCount} />
+				{/if}
 			</div>
 		</div>
 

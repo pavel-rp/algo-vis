@@ -1,4 +1,4 @@
-# Claude Context: Algorithm Visualizer
+﻿# Claude Context: Algorithm Visualizer
 
 **Project**: Algorithm Visualizer (algo-vis)
 **Version**: 1.0.0

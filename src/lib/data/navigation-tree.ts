@@ -59,6 +59,20 @@ export const navigationTree: NavigationTree = {
 							path: '/graphs/unique-paths-with-obstacles'
 						}
 					]
+				},
+				{
+					type: 'category',
+					id: 'graphs-priority-queue',
+					label: 'Priority Queue',
+					children: [
+						{
+							type: 'algorithm',
+							id: 'swim-in-water',
+							label: 'Swim in Rising Water',
+							pluginId: 'swim-in-water',
+							path: '/graphs/swim-in-water'
+						}
+					]
 				}
 			]
 		}
