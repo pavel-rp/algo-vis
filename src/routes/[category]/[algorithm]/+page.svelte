@@ -12,10 +12,11 @@
 	import type { PageData } from './$types';
 	import { PlaybackController } from '$lib/core/PlaybackController.svelte';
 	import GridRenderer from '$lib/renderers/GridRenderer.svelte';
-	import PlaybackControls from '$lib/components/PlaybackControls.svelte';
-	import SpeedControl from '$lib/components/SpeedControl.svelte';
-	import StatusPanel from '$lib/components/StatusPanel.svelte';
-	import PriorityQueueDisplay from '$lib/components/visualization/PriorityQueueDisplay.svelte';
+        import PlaybackControls from '$lib/components/PlaybackControls.svelte';
+        import SpeedControl from '$lib/components/SpeedControl.svelte';
+        import StatusPanel from '$lib/components/StatusPanel.svelte';
+        import LegendPanel from '$lib/components/panels/LegendPanel.svelte';
+        import PriorityQueueDisplay from '$lib/components/visualization/PriorityQueueDisplay.svelte';
 	import { trappingRainWater2Plugin } from '$lib/plugins/trappingRainWater2';
 	import { uniquePathsWithObstaclesPlugin } from '$lib/plugins/uniquePathsWithObstacles';
 	import { swimInWaterPlugin } from '$lib/plugins/swimInWater';
@@ -33,8 +34,8 @@
 	// Get algorithm plugin based on pluginId from route
 	const algorithm = $derived(pluginMap[data.pluginId as keyof typeof pluginMap]);
 
-	// Playback controller
-	const controller = new PlaybackController();
+        // Playback controller
+        const controller = new PlaybackController();
 
 	// Preset selection state
 	let selectedPresetIndex = $state(0);
@@ -108,8 +109,11 @@
 		algorithm.id === 'swim-in-water' || algorithm.id === 'trapping-rain-water-2'
 	);
 
-	// Load trace when algorithm or preset changes
-	$effect(() => {
+        // Derived legend groups (allow plugins to append extra entries)
+        let legendGroups = $derived(algorithm.legend ?? []);
+
+        // Load trace when algorithm or preset changes
+        $effect(() => {
 		const preset = algorithm.presets[selectedPresetIndex];
 		const validation = algorithm.validateInput(preset.data);
 
@@ -176,10 +180,13 @@
 
 			<!-- Right sidebar -->
 			<div class="space-y-6">
-				<!-- Status Panel -->
-				<div class="bg-white dark:bg-gray-800 rounded-lg shadow p-6">
-					<StatusPanel {controller} />
-				</div>
+                                <!-- Legend -->
+                                <LegendPanel extraGroups={legendGroups} />
+
+                                <!-- Status Panel -->
+                                <div class="bg-white dark:bg-gray-800 rounded-lg shadow p-6">
+                                        <StatusPanel {controller} />
+                                </div>
 
 				<!-- Priority Queue Display (conditionally) -->
 				{#if usesPriorityQueue && queueData}

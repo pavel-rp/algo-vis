@@ -1,12 +1,14 @@
 <script lang="ts">
-	/**
-	 * Home Page (Welcome)
-	 *
-	 * Simplified landing page. Algorithm selection now happens via sidebar navigation.
-	 *
-	 * Feature: 003-move-the-navigation
-	 * Date: 2025-10-06
-	 */
+        /**
+         * Home Page (Welcome)
+         *
+         * Simplified landing page. Algorithm selection now happens via sidebar navigation.
+         *
+         * Feature: 003-move-the-navigation
+         * Date: 2025-10-06
+         */
+
+        import LegendPanel from '$lib/components/panels/LegendPanel.svelte';
 </script>
 
 <svelte:head>
@@ -58,15 +60,15 @@
 			</div>
 		</div>
 
-		<!-- Features -->
-		<div class="mt-12 grid grid-cols-1 md:grid-cols-3 gap-6">
-			<div class="text-center space-y-2">
-				<div class="text-4xl">🎯</div>
-				<h3 class="font-semibold">Step-by-Step</h3>
-				<p class="text-sm text-gray-600 dark:text-gray-400">
-					Visualize each step of algorithm execution
-				</p>
-			</div>
+                <!-- Features -->
+                <div class="mt-12 grid grid-cols-1 md:grid-cols-3 gap-6">
+                        <div class="text-center space-y-2">
+                                <div class="text-4xl">🎯</div>
+                                <h3 class="font-semibold">Step-by-Step</h3>
+                                <p class="text-sm text-gray-600 dark:text-gray-400">
+                                        Visualize each step of algorithm execution
+                                </p>
+                        </div>
 			<div class="text-center space-y-2">
 				<div class="text-4xl">⚡</div>
 				<h3 class="font-semibold">Interactive</h3>
@@ -79,8 +81,20 @@
 				<h3 class="font-semibold">Multiple Presets</h3>
 				<p class="text-sm text-gray-600 dark:text-gray-400">
 					Try different inputs to see how algorithms adapt
-				</p>
-			</div>
-		</div>
-	</div>
+                                </p>
+                        </div>
+                </div>
+
+                <!-- Legend preview -->
+                <section class="mt-12 space-y-4">
+                        <div class="space-y-2">
+                                <h2 class="text-2xl font-semibold">Highlight legend</h2>
+                                <p class="text-gray-600 dark:text-gray-400">
+                                        Every visualization keeps this legend in sync so colors always communicate the same
+                                        roles.
+                                </p>
+                        </div>
+                        <LegendPanel />
+                </section>
+        </div>
 </div>

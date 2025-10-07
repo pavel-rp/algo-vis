@@ -5,6 +5,8 @@
  * Based on contracts/plugin-interface.ts from design docs.
  */
 
+import type { LegendGroup } from './legend';
+
 export const HIGHLIGHT_ROLES = [
         'start',
         'goal',
@@ -74,14 +76,15 @@ export interface ValidationResult {
 }
 
 export interface AlgorithmPlugin<TInput = any, TState = any> {
-	id: string;
-	name: string;
-	description: string;
-	category: string;
-	subcategory?: string; // Feature 004: Optional subcategory for navigation tree
-	visualizationType: 'grid' | 'array' | 'tree' | 'graph';
-	presets: InputPreset<TInput>[];
-	trace(input: TInput): Trace<TState>;
-	validateInput(input: TInput): ValidationResult;
-	code?: CodeDefinition;
+        id: string;
+        name: string;
+        description: string;
+        category: string;
+        subcategory?: string; // Feature 004: Optional subcategory for navigation tree
+        visualizationType: 'grid' | 'array' | 'tree' | 'graph';
+        presets: InputPreset<TInput>[];
+        trace(input: TInput): Trace<TState>;
+        validateInput(input: TInput): ValidationResult;
+        code?: CodeDefinition;
+        legend?: LegendGroup[];
 }

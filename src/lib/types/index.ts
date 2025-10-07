@@ -16,8 +16,10 @@ export { HIGHLIGHT_ROLES } from './plugin';
 export type { GridState } from './state';
 
 export {
-	FrameSchema,
-	TraceSchema,
-	validateTrace,
-	validateFrameSequence
+        FrameSchema,
+        TraceSchema,
+        validateTrace,
+        validateFrameSequence
 } from './validation';
+
+export type { LegendGroup, LegendItem } from './legend';
