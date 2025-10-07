@@ -35,7 +35,7 @@ Each algorithm frame should map its local and global state to the tokens below. 
 
 ### 1.2 Stroke and Outline Thickness
 
-- Default outline thickness is `border-[2px]` or `ring-2` for highlighted cells/nodes.
+- Default outline thickness is `border-2` or `ring-2` for highlighted cells/nodes.
 - Active states (`current`, `frontier`) may pulse using Tailwind `animate-ping` but must not drop below the base outline thickness.
 
 ## 2. Contextual Layout Guidance
@@ -87,14 +87,14 @@ Each algorithm frame should map its local and global state to the tokens below. 
 
 ### 3.1 Water Level (Trapping Rain Water II)
 
-- Base gradient: `from-sky-200/70 via-sky-300/70 to-sky-400/70` in light mode; `from-sky-300/60 via-sky-400/60 to-sky-500/60` in dark mode.
+- Base gradient: `bg-gradient-to-t from-sky-200/70 via-sky-300/70 to-sky-400/70` in light mode; `bg-gradient-to-t from-sky-300/60 via-sky-400/60 to-sky-500/60` in dark mode.
 - Blend mode: `mix-blend-multiply` for light, `mix-blend-screen` for dark to maintain depth without overpowering walls.
 - Always render beneath `visited` while allowing higher priority states (`current`, `frontier`, `confirmed path`) to remain fully visible above the water overlay.
 
 ### 3.2 Dynamic Programming Heatmap
 
 - Use a sequential scale: `bg-amber-50` → `bg-amber-500` (light) and `bg-amber-900/50` → `bg-amber-300/80` (dark).
-- Normalize values globally per frame to ensure comparability; update `aria-label` with normalized percentage for screen readers.
+- Normalize values within each frame so viewers can compare cells in that snapshot; update `aria-label` with normalized percentages for screen readers and document if a visualization instead normalizes across the full run.
 - Render as a background fill layer beneath path/selection states but above obstacles.
 
 ### 3.3 Shortest Path Highlight
@@ -109,7 +109,7 @@ Each algorithm frame should map its local and global state to the tokens below. 
 
 ### 3.5 Probability / Expectation Heatmap
 
-- For problems modeling probability or expected values, use `from-emerald-200 via-sky-200 to-sky-400` gradients (light) and `from-emerald-500/50 via-sky-500/40 to-sky-700/50` (dark).
+- For problems modeling probability or expected values, use `bg-gradient-to-t from-emerald-200 via-sky-200 to-sky-400` gradients (light) and `bg-gradient-to-t from-emerald-500/50 via-sky-500/40 to-sky-700/50` (dark).
 - Annotate tooltips with percentages and ensure overlays sit beneath `visited` while remaining above base terrain.
 
 ## 4. State Stacking & Priority
@@ -147,6 +147,7 @@ Renderers must apply states in the following z-order (bottom → top):
 - `pivot` elements use `bg-fuchsia-400` (light) or `bg-fuchsia-500/70` (dark) with `border-fuchsia-600/80` outlines.
 - `comparison` pairs adopt the `frontier` outline plus a temporary `bg-sky-100/80` (light) or `bg-sky-800/40` (dark) fill.
 - `swap` transitions flash `bg-amber-200/80` (light) or `bg-amber-600/50` (dark) for ≤150 ms; ensure `prefers-reduced-motion` disables the flash.
+- Apply `motion-reduce:animate-none motion-reduce:transition-none` (or guard flashes with `motion-safe:`) so reduced-motion users see a static state change instead of an animation.
 - Completed segments (`sorted`) reuse the global `confirmed path` stroke for arrays or `bg-emerald-200/80` fills for heaps.
 
 ## 5. Accessibility & Testing Checklist
