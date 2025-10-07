@@ -2,7 +2,7 @@
 
 **Goal**: Create a simple Bubble Sort visualization plugin in under 30 minutes
 
-**Prerequisites**: None - this guide walks you through the complete process
+**Prerequisites**: None - this guide walks you through the complete process. Review the [visual encoding specification](./visual-encoding.md) before choosing colors.
 
 ---
 

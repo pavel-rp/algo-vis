@@ -85,7 +85,7 @@ See [TESTING.md](./TESTING.md) for detailed testing information.
 
 ## Adding New Algorithms
 
-Create a new plugin following the `AlgorithmPlugin` interface:
+Create a new plugin following the `AlgorithmPlugin` interface and the [visual encoding palette](./specs/master/visual-encoding.md) when assigning state colors:
 
 ```typescript
 export const myAlgorithmPlugin: AlgorithmPlugin<InputType, StateType> = {
