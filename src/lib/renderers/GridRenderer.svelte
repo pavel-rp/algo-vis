@@ -23,15 +23,7 @@
 
         let { frame, heightMap, mode = 'height' }: Props = $props();
 
-        let cellHighlightTokens: Map<string, HighlightTokens> = new Map();
-        let globalHighlightBadges: Map<string, GlobalHighlightBadge[]> = new Map();
-
-        const highlightRingBase =
-                'border border-transparent ring-2 ring-offset-1 ring-offset-gray-100 dark:ring-offset-gray-800 shadow-sm';
-        const defaultCellClasses = 'bg-gray-100 dark:bg-gray-700 border border-gray-300 dark:border-gray-600';
-        const inactiveCellClasses = 'bg-gray-100 dark:bg-gray-800 border border-gray-200 dark:border-gray-700';
-
-        $: cellHighlightTokens = (() => {
+        const cellHighlightTokens = $derived(() => {
                 const map = new Map<string, HighlightTokens>();
                 if (!frame) return map;
 
@@ -57,9 +49,9 @@
                 });
 
                 return map;
-        })();
+        });
 
-        $: globalHighlightBadges = (() => {
+        const globalHighlightBadges = $derived(() => {
                 const map = new Map<string, GlobalHighlightBadge[]>();
                 if (!frame?.globalHighlights) return map;
 
@@ -76,7 +68,12 @@
                 });
 
                 return map;
-        })();
+        });
+
+        const highlightRingBase =
+                'border border-transparent ring-2 ring-offset-1 ring-offset-gray-100 dark:ring-offset-gray-800 shadow-sm';
+        const defaultCellClasses = 'bg-gray-100 dark:bg-gray-700 border border-gray-300 dark:border-gray-600';
+        const inactiveCellClasses = 'bg-gray-100 dark:bg-gray-800 border border-gray-200 dark:border-gray-700';
 
         function getCellHighlightTokens(rowIdx: number, colIdx: number): HighlightTokens | null {
                 if (!frame) return null;
