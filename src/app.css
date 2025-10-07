@@ -1,24 +1,93 @@
 @import "tailwindcss";
 
 :root {
-	/* Light theme colors */
-	--color-bg: #ffffff;
-	--color-text: #1f2937;
-	--color-primary: #3b82f6;
-	--color-secondary: #8b5cf6;
+        /* Light theme colors */
+        --color-bg: #ffffff;
+        --color-text: #1f2937;
+        --color-primary: #3b82f6;
+        --color-secondary: #8b5cf6;
 
-	/* Grid cell colors */
-	--cell-focus: #f59e0b;
-	--cell-neighbor: #22c55e;
-	--cell-visited: #3b82f6;
-	--cell-water: #22d3ee;
+        /* Grid cell colors */
+        --cell-focus: var(--highlight-current-fill);
+        --cell-neighbor: var(--highlight-frontier-fill);
+        --cell-visited: var(--highlight-visited-fill);
+        --cell-water: #22d3ee;
+
+        /* Highlight tokens */
+        @apply [--highlight-start-fill:theme(colors.emerald.500/0.9)]
+                [--highlight-start-border:theme(colors.emerald.600)]
+                [--highlight-start-text:theme(colors.white)]
+                [--highlight-goal-fill:theme(colors.rose.500/0.9)]
+                [--highlight-goal-border:theme(colors.rose.600)]
+                [--highlight-goal-text:theme(colors.white)]
+                [--highlight-current-fill:theme(colors.amber.400/0.9)]
+                [--highlight-current-border:theme(colors.amber.500)]
+                [--highlight-current-text:theme(colors.slate.900)]
+                [--highlight-frontier-fill:theme(colors.sky.400/0.8)]
+                [--highlight-frontier-border:theme(colors.sky.500)]
+                [--highlight-frontier-text:theme(colors.slate.900)]
+                [--highlight-queued-fill:theme(colors.indigo.400/0.8)]
+                [--highlight-queued-border:theme(colors.indigo.500)]
+                [--highlight-queued-text:theme(colors.white)]
+                [--highlight-visited-fill:theme(colors.blue.500/0.6)]
+                [--highlight-visited-border:theme(colors.blue.600)]
+                [--highlight-visited-text:theme(colors.white)]
+                [--highlight-path-active-fill:theme(colors.emerald.400/0.7)]
+                [--highlight-path-active-border:theme(colors.emerald.500)]
+                [--highlight-path-active-text:theme(colors.slate.900)]
+                [--highlight-path-final-fill:theme(colors.lime.400/0.8)]
+                [--highlight-path-final-border:theme(colors.lime.500)]
+                [--highlight-path-final-text:theme(colors.slate.900)]
+                [--highlight-obstacle-fill:theme(colors.slate.700/0.8)]
+                [--highlight-obstacle-border:theme(colors.slate.800)]
+                [--highlight-obstacle-text:theme(colors.white)]
+                [--highlight-weight-peek-fill:theme(colors.fuchsia.500/0.8)]
+                [--highlight-weight-peek-border:theme(colors.fuchsia.600)]
+                [--highlight-weight-peek-text:theme(colors.white)]
+                [--highlight-auxiliary-fill:theme(colors.zinc.400/0.7)]
+                [--highlight-auxiliary-border:theme(colors.zinc.500)]
+                [--highlight-auxiliary-text:theme(colors.slate.900)];
 }
 
 .dark {
-	--color-bg: #0f1220;
-	--color-text: #e6e9ff;
-	--color-primary: #6ea8fe;
-	--color-secondary: #22d3ee;
+        --color-bg: #0f1220;
+        --color-text: #e6e9ff;
+        --color-primary: #6ea8fe;
+        --color-secondary: #22d3ee;
+
+        @apply [--highlight-start-fill:theme(colors.emerald.400/0.85)]
+                [--highlight-start-border:theme(colors.emerald.300)]
+                [--highlight-start-text:theme(colors.white)]
+                [--highlight-goal-fill:theme(colors.rose.400/0.85)]
+                [--highlight-goal-border:theme(colors.rose.300)]
+                [--highlight-goal-text:theme(colors.white)]
+                [--highlight-current-fill:theme(colors.amber.500/0.9)]
+                [--highlight-current-border:theme(colors.amber.300)]
+                [--highlight-current-text:theme(colors.slate.950)]
+                [--highlight-frontier-fill:theme(colors.sky.300/0.85)]
+                [--highlight-frontier-border:theme(colors.sky.200)]
+                [--highlight-frontier-text:theme(colors.slate.950)]
+                [--highlight-queued-fill:theme(colors.indigo.500/0.85)]
+                [--highlight-queued-border:theme(colors.indigo.300)]
+                [--highlight-queued-text:theme(colors.white)]
+                [--highlight-visited-fill:theme(colors.blue.400/0.6)]
+                [--highlight-visited-border:theme(colors.blue.300)]
+                [--highlight-visited-text:theme(colors.white)]
+                [--highlight-path-active-fill:theme(colors.emerald.300/0.75)]
+                [--highlight-path-active-border:theme(colors.emerald.200)]
+                [--highlight-path-active-text:theme(colors.slate.950)]
+                [--highlight-path-final-fill:theme(colors.lime.300/0.8)]
+                [--highlight-path-final-border:theme(colors.lime.200)]
+                [--highlight-path-final-text:theme(colors.slate.950)]
+                [--highlight-obstacle-fill:theme(colors.slate.800/0.85)]
+                [--highlight-obstacle-border:theme(colors.slate.700)]
+                [--highlight-obstacle-text:theme(colors.white)]
+                [--highlight-weight-peek-fill:theme(colors.fuchsia.500/0.8)]
+                [--highlight-weight-peek-border:theme(colors.fuchsia.300)]
+                [--highlight-weight-peek-text:theme(colors.white)]
+                [--highlight-auxiliary-fill:theme(colors.zinc.500/0.7)]
+                [--highlight-auxiliary-border:theme(colors.zinc.400)]
+                [--highlight-auxiliary-text:theme(colors.slate.50)];
 }
 
 body {

@@ -156,13 +156,33 @@ describe('trappingRainWater2Plugin', () => {
 			expect(framesWithFocus.length).toBeGreaterThan(0);
 
 			// Focus markers should be grid-cell type
-			framesWithFocus.forEach((frame) => {
-				frame.focus?.forEach((marker) => {
-					expect(marker.type).toBe('grid-cell');
-					expect(marker.id).toMatch(/^\d+,\d+$/); // "row,col" format
-				});
-			});
-		});
+                        framesWithFocus.forEach((frame) => {
+                                frame.focus?.forEach((marker) => {
+                                        expect(marker.type).toBe('grid-cell');
+                                        expect(marker.id).toMatch(/^\d+,\d+$/); // "row,col" format
+                                        expect(marker.role).toBeDefined();
+                                });
+                        });
+                });
+
+                it('should include global highlight snapshots with water totals', () => {
+                        const grid = [
+                                [3, 3, 3],
+                                [3, 1, 3],
+                                [3, 3, 3]
+                        ];
+                        const trace = trappingRainWater2Plugin.trace(grid);
+
+                        const framesWithHighlights = trace.frames.filter((frame) => frame.globalHighlights && frame.globalHighlights.length > 0);
+                        expect(framesWithHighlights.length).toBeGreaterThan(0);
+
+                        const finalHighlights = trace.frames[trace.frames.length - 1].globalHighlights ?? [];
+                        const waterHighlight = finalHighlights.find((highlight) => highlight.role === 'weight-peek');
+
+                        expect(waterHighlight).toBeDefined();
+                        expect(waterHighlight?.weight?.label).toBe('Total Water');
+                        expect(waterHighlight?.weight?.value).toBe(trace.frames[trace.frames.length - 1].metrics?.['Total Water']);
+                });
 
 		it('should handle grid with no water to trap', () => {
 			const grid = [

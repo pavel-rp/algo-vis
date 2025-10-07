@@ -191,13 +191,14 @@ describe('uniquePathsWithObstaclesPlugin', () => {
 			expect(framesWithFocus.length).toBeGreaterThan(0);
 
 			// Focus markers should be grid-cell type
-			framesWithFocus.forEach((frame) => {
-				frame.focus?.forEach((marker) => {
-					expect(marker.type).toBe('grid-cell');
-					expect(marker.id).toMatch(/^\d+,\d+$/); // "row,col" format
-				});
-			});
-		});
+                        framesWithFocus.forEach((frame) => {
+                                frame.focus?.forEach((marker) => {
+                                        expect(marker.type).toBe('grid-cell');
+                                        expect(marker.id).toMatch(/^\d+,\d+$/); // "row,col" format
+                                        expect(marker.role).toBeDefined();
+                                });
+                        });
+                });
 
 		it('should produce sequential step numbers', () => {
 			const grid = [
@@ -211,17 +212,36 @@ describe('uniquePathsWithObstaclesPlugin', () => {
 			}
 		});
 
-		it('should include metrics in frames', () => {
-			const grid = [
-				[0, 0, 0],
-				[0, 0, 0]
-			];
-			const trace = uniquePathsWithObstaclesPlugin.trace(grid);
+                it('should include metrics in frames', () => {
+                        const grid = [
+                                [0, 0, 0],
+                                [0, 0, 0]
+                        ];
+                        const trace = uniquePathsWithObstaclesPlugin.trace(grid);
 
-			// Initial frame should have metrics
-			expect(trace.frames[0].metrics).toBeDefined();
-			expect(trace.frames[0].metrics?.Paths).toBe(0);
-		});
+                        // Initial frame should have metrics
+                        expect(trace.frames[0].metrics).toBeDefined();
+                        expect(trace.frames[0].metrics?.Paths).toBe(0);
+                });
+
+                it('should expose global highlights with final path and totals', () => {
+                        const grid = [
+                                [0, 0, 0],
+                                [0, 0, 0]
+                        ];
+                        const trace = uniquePathsWithObstaclesPlugin.trace(grid);
+                        const finalFrame = trace.frames[trace.frames.length - 1];
+
+                        expect(finalFrame.globalHighlights).toBeDefined();
+                        const highlights = finalFrame.globalHighlights ?? [];
+
+                        const pathHighlight = highlights.find((highlight) => highlight.role === 'path-final');
+                        expect(pathHighlight).toBeDefined();
+                        expect(pathHighlight?.nodes.length).toBeGreaterThan(0);
+
+                        const weightHighlight = highlights.find((highlight) => highlight.role === 'weight-peek');
+                        expect(weightHighlight?.weight?.value).toBe(finalFrame.metrics?.['Total Paths']);
+                });
 
 		it('should handle 1x1 grid without obstacle', () => {
 			const grid = [[0]];

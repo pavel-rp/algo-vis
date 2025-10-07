@@ -11,64 +11,116 @@ interface DPState extends GridState {
 
 function uniquePathsWithObstacles(obstacleGrid: number[][]): Trace<DPState> {
 	const frames: Frame<DPState>[] = [];
-	const m = obstacleGrid.length;
-	const n = obstacleGrid[0].length;
-	let step = 0;
+        const m = obstacleGrid.length;
+        const n = obstacleGrid[0].length;
+        let step = 0;
 
-	// Initialize DP table for visualization
-	const dp: number[][] = Array.from({ length: m }, () => Array(n).fill(0));
-	const visited: boolean[][] = Array.from({ length: m }, () => Array(n).fill(false));
+        // Initialize DP table for visualization
+        const dp: number[][] = Array.from({ length: m }, () => Array(n).fill(0));
+        const visited: boolean[][] = Array.from({ length: m }, () => Array(n).fill(false));
 
-	let prevRow = new Array(n).fill(0);
-	prevRow[0] = 1;
+        const obstacleNodes = obstacleGrid
+                .map((row, i) => row.map((value, j) => (value === 1 ? `${i},${j}` : null)))
+                .flat()
+                .filter((id): id is string => Boolean(id));
+
+        let prevRow = new Array(n).fill(0);
+        prevRow[0] = 1;
+
+        const snapshotHighlights = (options?: { pathNodes?: string[]; totalPaths?: number }) => {
+                const highlights: NonNullable<Frame<DPState>['globalHighlights']> = [];
+
+                if (obstacleNodes.length > 0) {
+                        highlights.push({ role: 'obstacle', nodes: obstacleNodes });
+                }
+
+                const visitedNodes = visited
+                        .map((row, i) => row.map((isVisited, j) => (isVisited ? `${i},${j}` : null)))
+                        .flat()
+                        .filter((id): id is string => Boolean(id));
+
+                if (visitedNodes.length > 0) {
+                        highlights.push({ role: 'visited', nodes: visitedNodes });
+                }
+
+                if (options?.pathNodes && options.pathNodes.length > 0) {
+                        highlights.push({
+                                role: options.totalPaths !== undefined ? 'path-final' : 'path-active',
+                                nodes: options.pathNodes
+                        });
+                }
+
+                if (typeof options?.totalPaths === 'number') {
+                        highlights.push({
+                                role: 'weight-peek',
+                                nodes: [`${m - 1},${n - 1}`],
+                                weight: { label: 'Paths', value: options.totalPaths }
+                        });
+                }
+
+                return highlights.length > 0 ? highlights : undefined;
+        };
 
 	// Frame 0: Initial state
-	frames.push({
-		step: step++,
-		state: {
-			grid: obstacleGrid.map((row) => [...row]),
-			visited: visited.map((row) => [...row]),
-			dp: dp.map((row) => [...row]),
-			prevRow: [...prevRow],
-			curRow: []
-		},
-		description: `Starting Unique Paths with Obstacles. Grid size: ${m}×${n}. Using dynamic programming with space optimization (2 rows).`,
-		metrics: { 'Grid Size': `${m}×${n}`, Paths: 0 }
-	});
+        frames.push({
+                step: step++,
+                state: {
+                        grid: obstacleGrid.map((row) => [...row]),
+                        visited: visited.map((row) => [...row]),
+                        dp: dp.map((row) => [...row]),
+                        prevRow: [...prevRow],
+                        curRow: []
+                },
+                globalHighlights: snapshotHighlights(),
+                description: `Starting Unique Paths with Obstacles. Grid size: ${m}×${n}. Using dynamic programming with space optimization (2 rows).`,
+                metrics: { 'Grid Size': `${m}×${n}`, Paths: 0 }
+        });
 
 	// Initialize first cell
 	dp[0][0] = obstacleGrid[0][0] === 1 ? 0 : 1;
-	frames.push({
-		step: step++,
-		state: {
-			grid: obstacleGrid.map((row) => [...row]),
-			visited: visited.map((row) => [...row]),
-			dp: dp.map((row) => [...row]),
-			prevRow: [...prevRow],
-			curRow: []
-		},
-		focus: [{ type: 'grid-cell', id: '0,0' }],
-		description: `Initialize: prevRow[0] = ${prevRow[0]} (starting position${obstacleGrid[0][0] === 1 ? ' is blocked!' : ''}).`,
-		metrics: { Row: 0, Column: 0, 'Prev Row': prevRow.join(', ') }
-	});
+        frames.push({
+                step: step++,
+                state: {
+                        grid: obstacleGrid.map((row) => [...row]),
+                        visited: visited.map((row) => [...row]),
+                        dp: dp.map((row) => [...row]),
+                        prevRow: [...prevRow],
+                        curRow: []
+                },
+                focus: [
+                        {
+                                type: 'grid-cell',
+                                id: '0,0',
+                                role: obstacleGrid[0][0] === 1 ? 'obstacle' : 'start'
+                        }
+                ],
+                globalHighlights: snapshotHighlights(),
+                description: `Initialize: prevRow[0] = ${prevRow[0]} (starting position${obstacleGrid[0][0] === 1 ? ' is blocked!' : ''}).`,
+                metrics: { Row: 0, Column: 0, 'Prev Row': prevRow.join(', ') }
+        });
 
 	// Process each row
 	for (let i = 0; i < m; i++) {
 		const curRow = new Array(n);
 
-		frames.push({
-			step: step++,
-			state: {
-				grid: obstacleGrid.map((row) => [...row]),
-				visited: visited.map((row) => [...row]),
-				dp: dp.map((row) => [...row]),
-				prevRow: [...prevRow],
-				curRow: []
-			},
-			focus: Array.from({ length: n }, (_, j) => ({ type: 'grid-cell' as const, id: `${i},${j}` })),
-			description: `Processing row ${i}. Will compute paths for each cell.`,
-			metrics: { Row: i, 'Prev Row': prevRow.join(', ') }
-		});
+                frames.push({
+                        step: step++,
+                        state: {
+                                grid: obstacleGrid.map((row) => [...row]),
+                                visited: visited.map((row) => [...row]),
+                                dp: dp.map((row) => [...row]),
+                                prevRow: [...prevRow],
+                                curRow: []
+                        },
+                        focus: Array.from({ length: n }, (_, j) => ({
+                                type: 'grid-cell' as const,
+                                id: `${i},${j}`,
+                                role: 'auxiliary'
+                        })),
+                        globalHighlights: snapshotHighlights(),
+                        description: `Processing row ${i}. Will compute paths for each cell.`,
+                        metrics: { Row: i, 'Prev Row': prevRow.join(', ') }
+                });
 
 		// Process each column
 		for (let j = 0; j < n; j++) {
@@ -78,22 +130,23 @@ function uniquePathsWithObstacles(obstacleGrid: number[][]): Trace<DPState> {
 				curRow[j] = 0;
 				dp[i][j] = 0;
 
-				frames.push({
-					step: step++,
-					state: {
-						grid: obstacleGrid.map((row) => [...row]),
-						visited: visited.map((row) => [...row]),
-						dp: dp.map((row) => [...row]),
-						prevRow: [...prevRow],
-						curRow: [...curRow],
-						currentCell: { row: i, col: j }
-					},
-					focus: [{ type: 'grid-cell', id: `${i},${j}` }],
-					description: `Cell [${i},${j}] is blocked (obstacle). Set paths = 0.`,
-					metrics: {
-						Row: i,
-						Column: j,
-						'Cell Value': 0,
+                                frames.push({
+                                        step: step++,
+                                        state: {
+                                                grid: obstacleGrid.map((row) => [...row]),
+                                                visited: visited.map((row) => [...row]),
+                                                dp: dp.map((row) => [...row]),
+                                                prevRow: [...prevRow],
+                                                curRow: [...curRow],
+                                                currentCell: { row: i, col: j }
+                                        },
+                                        focus: [{ type: 'grid-cell', id: `${i},${j}`, role: 'obstacle' }],
+                                        globalHighlights: snapshotHighlights(),
+                                        description: `Cell [${i},${j}] is blocked (obstacle). Set paths = 0.`,
+                                        metrics: {
+                                                Row: i,
+                                                Column: j,
+                                                'Cell Value': 0,
 						'Cur Row': curRow.filter((v) => v !== undefined).join(', ') || '[]'
 					}
 				});
@@ -103,9 +156,9 @@ function uniquePathsWithObstacles(obstacleGrid: number[][]): Trace<DPState> {
 				curRow[j] = fromTop + fromLeft;
 				dp[i][j] = curRow[j];
 
-				const neighbors = [];
-				if (i > 0) neighbors.push({ type: 'grid-cell' as const, id: `${i - 1},${j}` }); // top
-				if (j > 0) neighbors.push({ type: 'grid-cell' as const, id: `${i},${j - 1}` }); // left
+                                const neighbors = [];
+                                if (i > 0) neighbors.push({ type: 'grid-cell' as const, id: `${i - 1},${j}`, role: 'path-active' }); // top
+                                if (j > 0) neighbors.push({ type: 'grid-cell' as const, id: `${i},${j - 1}`, role: 'path-active' }); // left
 
 				frames.push({
 					step: step++,
@@ -117,8 +170,9 @@ function uniquePathsWithObstacles(obstacleGrid: number[][]): Trace<DPState> {
 						curRow: [...curRow],
 						currentCell: { row: i, col: j }
 					},
-					focus: [{ type: 'grid-cell', id: `${i},${j}` }],
-					neighbors: neighbors.length > 0 ? neighbors : undefined,
+                                        focus: [{ type: 'grid-cell', id: `${i},${j}`, role: 'current' }],
+                                        neighbors: neighbors.length > 0 ? neighbors : undefined,
+                                        globalHighlights: snapshotHighlights(),
 					description: `Cell [${i},${j}]: paths = from_top(${fromTop}) + from_left(${fromLeft}) = ${curRow[j]}.`,
 					metrics: {
 						Row: i,
@@ -134,35 +188,76 @@ function uniquePathsWithObstacles(obstacleGrid: number[][]): Trace<DPState> {
 
 		prevRow = curRow;
 
-		frames.push({
-			step: step++,
-			state: {
-				grid: obstacleGrid.map((row) => [...row]),
-				visited: visited.map((row) => [...row]),
-				dp: dp.map((row) => [...row]),
-				prevRow: [...prevRow],
-				curRow: []
-			},
-			description: `Row ${i} complete. Updated prevRow = [${prevRow.join(', ')}].`,
-			metrics: { Row: i, 'Prev Row': prevRow.join(', ') }
-		});
+                frames.push({
+                        step: step++,
+                        state: {
+                                grid: obstacleGrid.map((row) => [...row]),
+                                visited: visited.map((row) => [...row]),
+                                dp: dp.map((row) => [...row]),
+                                prevRow: [...prevRow],
+                                curRow: []
+                        },
+                        globalHighlights: snapshotHighlights(),
+                        description: `Row ${i} complete. Updated prevRow = [${prevRow.join(', ')}].`,
+                        metrics: { Row: i, 'Prev Row': prevRow.join(', ') }
+                });
 	}
 
-	// Final result
-	const result = prevRow[n - 1];
-	frames.push({
-		step: step++,
-		state: {
-			grid: obstacleGrid.map((row) => [...row]),
-			visited: visited.map((row) => [...row]),
-			dp: dp.map((row) => [...row]),
-			prevRow: [...prevRow],
-			curRow: []
-		},
-		focus: [{ type: 'grid-cell', id: `${m - 1},${n - 1}` }],
-		description: `Algorithm complete! Total unique paths from top-left to bottom-right: ${result}.`,
-		metrics: { 'Total Paths': result }
-	});
+        const buildRepresentativePath = (): string[] => {
+                if (dp[m - 1][n - 1] === 0) return [];
+
+                const path: string[] = [];
+                let row = m - 1;
+                let col = n - 1;
+
+                while (row >= 0 && col >= 0) {
+                        path.unshift(`${row},${col}`);
+                        if (row === 0 && col === 0) {
+                                break;
+                        }
+
+                        const leftValue = col > 0 ? dp[row][col - 1] : 0;
+                        const upValue = row > 0 ? dp[row - 1][col] : 0;
+
+                        if (leftValue > 0 && upValue > 0) {
+                                if (leftValue >= upValue) {
+                                        col -= 1;
+                                } else {
+                                        row -= 1;
+                                }
+                        } else if (leftValue > 0) {
+                                col -= 1;
+                        } else if (upValue > 0) {
+                                row -= 1;
+                        } else if (col > 0) {
+                                col -= 1;
+                        } else if (row > 0) {
+                                row -= 1;
+                        } else {
+                                break;
+                        }
+                }
+
+                return path;
+        };
+
+        // Final result
+        const result = prevRow[n - 1];
+        const representativePath = buildRepresentativePath();
+        frames.push({
+                step: step++,
+                state: {
+                        grid: obstacleGrid.map((row) => [...row]),
+                        visited: visited.map((row) => [...row]),
+                        dp: dp.map((row) => [...row]),
+                        prevRow: [...prevRow],
+                        curRow: []
+                },
+                focus: [{ type: 'grid-cell', id: `${m - 1},${n - 1}`, role: 'goal' }],
+                globalHighlights: snapshotHighlights({ pathNodes: representativePath, totalPaths: result }),
+                description: `Algorithm complete! Total unique paths from top-left to bottom-right: ${result}.`,
+                metrics: { 'Total Paths': result }
+        });
 
 	return {
 		frames,
