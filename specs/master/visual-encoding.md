@@ -21,6 +21,7 @@ Each algorithm frame should map its local and global state to the tokens below. 
 | `pruned` | Branch discarded by pruning/constraint failure. | Diagonal cross overlay. | `border-rose-400/90`, `bg-rose-50/70` | `border-rose-300/70`, `bg-rose-500/30` |
 | `heuristic` emphasis | Heuristic-driven scoring (e.g., A*). | Corner badge. | `bg-cyan-200`, `text-cyan-900` | `bg-cyan-500/70`, `text-cyan-50` |
 | `component` | Connected/component identifiers (Union Find, islands). | Label + subtle fill. | `bg-emerald-200/60`, `border-emerald-400/70` | `bg-emerald-500/40`, `border-emerald-400/50` |
+| `window` / `sliding window` | Contiguous subarray/string focus region. | Semi-transparent span with outline. | `bg-sky-200/60`, `border-sky-400/80` | `bg-sky-500/40`, `border-sky-400/70` |
 | `pivot` | Active partition element in sorting algorithms. | Badge anchored to element. | `bg-fuchsia-400`, `border-fuchsia-600/80` | `bg-fuchsia-500/70`, `border-fuchsia-400/80` |
 | `comparison` | Elements currently compared during ordering. | Frontier outline + temporary wash. | `ring-sky-500/90`, `bg-sky-100/80` | `ring-sky-300/80`, `bg-sky-800/40` |
 | `swap` | Elements exchanging positions. | Flash or transient fill. | `bg-amber-200/80`, `border-amber-500` | `bg-amber-600/50`, `border-amber-400/70` |
@@ -56,7 +57,7 @@ Each algorithm frame should map its local and global state to the tokens below. 
 ### 2.3 Trees
 
 - Maintain consistent depth spacing. Root inherits `start` state styling. Leaves with goal state should apply `goal` colors even if they are not unique targets.
-- Use `border-l` + `border-b` connectors with `stroke-slate-400` by default; override with path tokens as needed.
+- Use `border-l` + `border-b` connectors with `border-slate-400` by default; override with path tokens as needed.
 - Recursive traversal order (pre/in/post) can be indicated with numeric chips using `bg-amber-200` (light) or `bg-amber-600/60` (dark) to show visitation order.
 
 ### 2.4 Arrays & Strings
