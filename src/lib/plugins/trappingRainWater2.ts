@@ -157,58 +157,80 @@ function trapRainWater2(heightMap: number[][]): Trace<GridState> {
 	];
 
 	// Process cells from min-heap
-	while (!heap.isEmpty()) {
-		const cell = heap.pop()!;
-		const { row, col, height } = cell;
+        while (!heap.isEmpty()) {
+                const cell = heap.pop()!;
+                const { row, col, height } = cell;
 
-		const neighbors = [];
-		for (const [dr, dc] of directions) {
-			const newRow = row + dr;
-			const newCol = col + dc;
+                const neighbors = [];
+                const aggregateNotes: string[] = [];
+                const neighborCells: { row: number; col: number; elev: number }[] = [];
 
-			if (
-				newRow >= 0 &&
+                for (const [dr, dc] of directions) {
+                        const newRow = row + dr;
+                        const newCol = col + dc;
+
+                        if (
+                                newRow >= 0 &&
 				newRow < m &&
 				newCol >= 0 &&
 				newCol < n &&
 				!visited[newRow][newCol]
 			) {
-				visited[newRow][newCol] = true;
-				const trapped = Math.max(0, height - heightMap[newRow][newCol]);
-				water[newRow][newCol] = trapped;
-				totalWater += trapped;
+                                visited[newRow][newCol] = true;
+                                const neighborHeight = heightMap[newRow][newCol];
+                                const trappedCandidate = height - neighborHeight;
+                                const trapped = Math.max(0, trappedCandidate);
+                                const previousTotal = totalWater;
+                                const updatedTotal = previousTotal + trapped;
+                                water[newRow][newCol] = trapped;
+                                totalWater = updatedTotal;
 
-				heap.push({
-					row: newRow,
-					col: newCol,
-					height: Math.max(height, heightMap[newRow][newCol])
-				});
+                                const aggregateMessage =
+                                        trapped > 0
+                                                ? `*Added max(0, ${height} - ${neighborHeight}) = ${trapped} water ⇒ ${previousTotal} → ${updatedTotal}*`
+                                                : `*Checked max(0, ${height} - ${neighborHeight}) = 0 ⇒ total stays ${updatedTotal}*`;
+                                aggregateNotes.push(aggregateMessage);
+
+                                heap.push({
+                                        row: newRow,
+                                        col: newCol,
+                                        height: Math.max(height, neighborHeight)
+                                });
 
                                 neighbors.push({ type: 'grid-cell' as const, id: `${newRow},${newCol}`, role: 'frontier' });
-			}
-		}
+                                neighborCells.push({ row: newRow, col: newCol, elev: neighborHeight });
+                        }
+                }
 
-		frames.push({
-			step: step++,
-			state: {
-				grid: heightMap.map((row) => [...row]),
-				visited: visited.map((row) => [...row]),
-				water: water.map((row) => [...row]),
+                let desc = `Processing cell (${row},${col}) with height ${heightMap[row][col]}. `;
+                if (neighbors.length > 0) {
+                        desc += `Found ${neighbors.length} unvisited neighbor(s): `;
+                        desc += neighborCells.map((c) => `(${c.row},${c.col})→${c.elev}`).join(', ');
+                } else {
+                        desc += 'No new neighbors to explore.';
+                }
+
+                if (aggregateNotes.length > 0) {
+                        desc += ` ${aggregateNotes.join(' ')}`;
+                }
+
+                frames.push({
+                        step: step++,
+                        state: {
+                                grid: heightMap.map((row) => [...row]),
+                                visited: visited.map((row) => [...row]),
+                                water: water.map((row) => [...row]),
 				heap: heap.toArray()
 			},
                         focus: [{ type: 'grid-cell', id: `${row},${col}`, role: 'current' }],
                         neighbors: neighbors.length > 0 ? neighbors : undefined,
                         globalHighlights: snapshotHighlights(),
-			description: `Processing cell (${row},${col}) with height ${heightMap[row][col]}. ${
-				neighbors.length > 0
-					? `Found ${neighbors.length} unvisited neighbor(s).`
-					: 'No new neighbors.'
-			}`,
-			metrics: {
-				'Current Height': height,
-				'Heap Size': heap.toArray().length,
-				'Total Water': totalWater
-			}
+                        description: desc,
+                        metrics: {
+                                'Current Height': height,
+                                'Heap Size': heap.toArray().length,
+                                'Total Water': totalWater
+                        }
 		});
 	}
 
@@ -222,7 +244,7 @@ function trapRainWater2(heightMap: number[][]): Trace<GridState> {
                         heap: []
                 },
                 globalHighlights: snapshotHighlights(),
-                description: `Algorithm complete! Total water trapped: ${totalWater} units.`,
+                description: `Algorithm complete! Total water trapped: ${totalWater} units. *Final total water = ${totalWater}*`,
                 metrics: { 'Total Water': totalWater }
         });
 

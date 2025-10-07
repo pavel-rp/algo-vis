@@ -113,12 +113,17 @@ function swimInRisingWaterTrace(input: { grid: number[][] }): Trace<GridState> {
 	});
 
 	// BFS with priority queue
-	while (!heap.isEmpty()) {
-		const current = heap.pop()!;
-		const { row, col, elevation } = current;
+        while (!heap.isEmpty()) {
+                const current = heap.pop()!;
+                const { row, col, elevation } = current;
 
-		// Update maximum elevation (the time we need to wait)
-		currentMaxElevation = Math.max(currentMaxElevation, elevation);
+                const previousMaxElevation = currentMaxElevation;
+                const updatedMaxElevation = Math.max(previousMaxElevation, elevation);
+                currentMaxElevation = updatedMaxElevation;
+                const maxNote =
+                        updatedMaxElevation !== previousMaxElevation
+                                ? `*Updated max time via max(${previousMaxElevation}, ${elevation}) = ${updatedMaxElevation}*`
+                                : `*Checked max(${previousMaxElevation}, ${elevation}) = ${updatedMaxElevation} (unchanged)*`;
 
 		// Check if reached destination
 		if (row === n - 1 && col === n - 1) {
@@ -131,7 +136,7 @@ function swimInRisingWaterTrace(input: { grid: number[][] }): Trace<GridState> {
 				},
                                 focus: [{ type: 'grid-cell', id: `${row},${col}`, role: 'goal' }],
                                 globalHighlights: snapshotHighlights(),
-                                description: `Reached destination (${row},${col})! Minimum time required: ${currentMaxElevation}`,
+                                description: `Reached destination (${row},${col})! Minimum time required: ${currentMaxElevation}. *Final time = ${currentMaxElevation}*`,
                                 metrics: {
                                         '**Final Answer**': currentMaxElevation,
                                         'Grid Size': `${n}×${n}`
@@ -157,14 +162,16 @@ function swimInRisingWaterTrace(input: { grid: number[][] }): Trace<GridState> {
                         }
                 }
 
-		// Create description
-		let desc = `Processing cell (${row},${col}) with elevation ${elevation}.`;
-		if (neighbors.length > 0) {
-			desc += ` Found ${neighbors.length} unvisited neighbor(s): `;
-			desc += neighborCells.map((c) => `(${c.row},${c.col})→${c.elev}`).join(', ');
-		} else {
-			desc += ' No new neighbors to explore.';
-		}
+                // Create description
+                let desc = `Processing cell (${row},${col}) with elevation ${elevation}.`;
+                if (neighbors.length > 0) {
+                        desc += ` Found ${neighbors.length} unvisited neighbor(s): `;
+                        desc += neighborCells.map((c) => `(${c.row},${c.col})→${c.elev}`).join(', ');
+                } else {
+                        desc += ' No new neighbors to explore.';
+                }
+
+                desc += ` ${maxNote}`;
 
 		// Capture frame after exploring neighbors
                 frames.push({
