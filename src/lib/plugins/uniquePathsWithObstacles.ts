@@ -18,6 +18,7 @@ function uniquePathsWithObstacles(obstacleGrid: number[][]): Trace<DPState> {
         // Initialize DP table for visualization
         const dp: number[][] = Array.from({ length: m }, () => Array(n).fill(0));
         const visited: boolean[][] = Array.from({ length: m }, () => Array(n).fill(false));
+        const visitedNodeIds: string[] = [];
 
         const obstacleNodes = obstacleGrid
                 .map((row, i) => row.map((value, j) => (value === 1 ? `${i},${j}` : null)))
@@ -34,13 +35,8 @@ function uniquePathsWithObstacles(obstacleGrid: number[][]): Trace<DPState> {
                         highlights.push({ role: 'obstacle', nodes: obstacleNodes });
                 }
 
-                const visitedNodes = visited
-                        .map((row, i) => row.map((isVisited, j) => (isVisited ? `${i},${j}` : null)))
-                        .flat()
-                        .filter((id): id is string => Boolean(id));
-
-                if (visitedNodes.length > 0) {
-                        highlights.push({ role: 'visited', nodes: visitedNodes });
+                if (visitedNodeIds.length > 0) {
+                        highlights.push({ role: 'visited', nodes: [...visitedNodeIds] });
                 }
 
                 if (options?.pathNodes && options.pathNodes.length > 0) {
@@ -124,7 +120,11 @@ function uniquePathsWithObstacles(obstacleGrid: number[][]): Trace<DPState> {
 
 		// Process each column
 		for (let j = 0; j < n; j++) {
-			visited[i][j] = true;
+                        const cellId = `${i},${j}`;
+                        if (!visited[i][j]) {
+                                visited[i][j] = true;
+                                visitedNodeIds.push(cellId);
+                        }
 
 			if (obstacleGrid[i][j] === 1) {
 				curRow[j] = 0;
@@ -140,7 +140,7 @@ function uniquePathsWithObstacles(obstacleGrid: number[][]): Trace<DPState> {
                                                 curRow: [...curRow],
                                                 currentCell: { row: i, col: j }
                                         },
-                                        focus: [{ type: 'grid-cell', id: `${i},${j}`, role: 'obstacle' }],
+                                        focus: [{ type: 'grid-cell', id: cellId, role: 'obstacle' }],
                                         globalHighlights: snapshotHighlights(),
                                         description: `Cell [${i},${j}] is blocked (obstacle). Set paths = 0.`,
                                         metrics: {
@@ -157,8 +157,10 @@ function uniquePathsWithObstacles(obstacleGrid: number[][]): Trace<DPState> {
 				dp[i][j] = curRow[j];
 
                                 const neighbors = [];
-                                if (i > 0) neighbors.push({ type: 'grid-cell' as const, id: `${i - 1},${j}`, role: 'path-active' }); // top
-                                if (j > 0) neighbors.push({ type: 'grid-cell' as const, id: `${i},${j - 1}`, role: 'path-active' }); // left
+                                if (i > 0)
+                                        neighbors.push({ type: 'grid-cell' as const, id: `${i - 1},${j}`, role: 'path-active' }); // top
+                                if (j > 0)
+                                        neighbors.push({ type: 'grid-cell' as const, id: `${i},${j - 1}`, role: 'path-active' }); // left
 
 				frames.push({
 					step: step++,
@@ -170,7 +172,7 @@ function uniquePathsWithObstacles(obstacleGrid: number[][]): Trace<DPState> {
 						curRow: [...curRow],
 						currentCell: { row: i, col: j }
 					},
-                                        focus: [{ type: 'grid-cell', id: `${i},${j}`, role: 'current' }],
+                                        focus: [{ type: 'grid-cell', id: cellId, role: 'current' }],
                                         neighbors: neighbors.length > 0 ? neighbors : undefined,
                                         globalHighlights: snapshotHighlights(),
 					description: `Cell [${i},${j}]: paths = from_top(${fromTop}) + from_left(${fromLeft}) = ${curRow[j]}.`,

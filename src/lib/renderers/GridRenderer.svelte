@@ -27,22 +27,16 @@
                 const map = new Map<string, HighlightTokens>();
                 if (!frame) return map;
 
-                const registerMarker = (marker: NonNullable<Frame['focus']>[number], fallback: HighlightRole) => {
-                        const role = marker.role ?? fallback;
-                        const tokens = HIGHLIGHT_COLOR_TOKENS[role];
+                const registerMarker = (marker: NonNullable<Frame['focus']>[number]) => {
                         if (!map.has(marker.id)) {
-                                map.set(marker.id, tokens);
+                                map.set(marker.id, HIGHLIGHT_COLOR_TOKENS[marker.role]);
                         }
                 };
 
-                frame.neighbors?.forEach((marker) => {
-                        registerMarker(marker, 'frontier');
-                });
+                frame.neighbors?.forEach(registerMarker);
 
                 frame.focus?.forEach((marker) => {
-                        const role = marker.role ?? 'current';
-                        const tokens = HIGHLIGHT_COLOR_TOKENS[role];
-                        map.set(marker.id, tokens);
+                        map.set(marker.id, HIGHLIGHT_COLOR_TOKENS[marker.role]);
                 });
 
                 return map;
