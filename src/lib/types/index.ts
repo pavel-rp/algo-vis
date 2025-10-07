@@ -11,6 +11,8 @@ export type {
         ValidationResult
 } from './plugin';
 
+export { HIGHLIGHT_ROLES } from './plugin';
+
 export type { GridState } from './state';
 
 export {

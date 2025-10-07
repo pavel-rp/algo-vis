@@ -1,21 +1,8 @@
 import { z } from 'zod';
-import type { Frame, Trace, HighlightRole } from './plugin';
+import type { Frame, Trace } from './plugin';
+import { HIGHLIGHT_ROLES } from './plugin';
 
-const highlightRoles: HighlightRole[] = [
-        'start',
-        'goal',
-        'current',
-        'frontier',
-        'queued',
-        'visited',
-        'path-active',
-        'path-final',
-        'obstacle',
-        'weight-peek',
-        'auxiliary'
-];
-
-const HighlightRoleSchema = z.enum(highlightRoles);
+const HighlightRoleSchema = z.enum(HIGHLIGHT_ROLES);
 
 const FocusMarkerSchema = z.object({
         type: z.enum(['grid-cell', 'array-index', 'tree-node', 'graph-node']),

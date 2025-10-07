@@ -30,7 +30,6 @@
                 const registerMarker = (marker: NonNullable<Frame['focus']>[number], fallback: HighlightRole) => {
                         const role = marker.role ?? fallback;
                         const tokens = HIGHLIGHT_COLOR_TOKENS[role];
-                        if (!tokens) return;
                         if (!map.has(marker.id)) {
                                 map.set(marker.id, tokens);
                         }
@@ -43,9 +42,7 @@
                 frame.focus?.forEach((marker) => {
                         const role = marker.role ?? 'current';
                         const tokens = HIGHLIGHT_COLOR_TOKENS[role];
-                        if (tokens) {
-                                map.set(marker.id, tokens);
-                        }
+                        map.set(marker.id, tokens);
                 });
 
                 return map;
@@ -84,8 +81,7 @@
 
                 const global = globalHighlightBadges.get(cellId);
                 if (global && global.length > 0) {
-                        const tokens = HIGHLIGHT_COLOR_TOKENS[global[0].role];
-                        if (tokens) return tokens;
+                        return HIGHLIGHT_COLOR_TOKENS[global[0].role];
                 }
 
                 if (frame.state.visited?.[rowIdx]?.[colIdx]) {

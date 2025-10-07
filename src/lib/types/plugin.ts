@@ -5,18 +5,21 @@
  * Based on contracts/plugin-interface.ts from design docs.
  */
 
-export type HighlightRole =
-        | 'start'
-        | 'goal'
-        | 'current'
-        | 'frontier'
-        | 'queued'
-        | 'visited'
-        | 'path-active'
-        | 'path-final'
-        | 'obstacle'
-        | 'weight-peek'
-        | 'auxiliary';
+export const HIGHLIGHT_ROLES = [
+        'start',
+        'goal',
+        'current',
+        'frontier',
+        'queued',
+        'visited',
+        'path-active',
+        'path-final',
+        'obstacle',
+        'weight-peek',
+        'auxiliary'
+] as const;
+
+export type HighlightRole = (typeof HIGHLIGHT_ROLES)[number];
 
 export interface FocusMarker {
         type: 'grid-cell' | 'array-index' | 'tree-node' | 'graph-node';
