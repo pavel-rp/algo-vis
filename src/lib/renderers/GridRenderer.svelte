@@ -1,12 +1,7 @@
 <script lang="ts">
-        import type { Frame, HighlightRole, GlobalHighlight } from '$lib/types';
+        import type { Frame, HighlightRole } from '$lib/types';
         import type { GridState } from '$lib/types/state';
         import { HIGHLIGHT_COLOR_TOKENS, type HighlightTokens } from '$lib/theme/colorTokens';
-
-        interface GlobalHighlightBadge {
-                role: HighlightRole;
-                weight: NonNullable<GlobalHighlight['weight']>;
-        }
 
         interface Props {
                 frame: Frame<GridState> | null;
@@ -36,27 +31,18 @@
         });
 
         let globalHighlightRoles = $state(new Map<string, HighlightRole>());
-        let globalHighlightBadges = $state(new Map<string, GlobalHighlightBadge[]>());
         $effect(() => {
                 const roleMap = new Map<string, HighlightRole>();
-                const badgeMap = new Map<string, GlobalHighlightBadge[]>();
 
                 if (frame?.globalHighlights) {
                         frame.globalHighlights.forEach((highlight) => {
-                                highlight.nodes.forEach((nodeId, index) => {
+                                highlight.nodes.forEach((nodeId) => {
                                         roleMap.set(nodeId, highlight.role);
-
-                                        if (highlight.weight && index === 0) {
-                                                const badges = badgeMap.get(nodeId) ?? [];
-                                                badges.push({ role: highlight.role, weight: highlight.weight });
-                                                badgeMap.set(nodeId, badges);
-                                        }
                                 });
                         });
                 }
 
                 globalHighlightRoles = roleMap;
-                globalHighlightBadges = badgeMap;
         });
 
         const highlightRingBase =
@@ -101,13 +87,9 @@
                 return defaultCellClasses;
         }
 
-        function getWaterHeight(rowIdx: number, colIdx: number): number {
-                return frame?.state.water?.[rowIdx]?.[colIdx] ?? 0;
+        function getDPValue(rowIdx: number, colIdx: number): number | null {
+                return frame?.state.dp?.[rowIdx]?.[colIdx] ?? null;
         }
-
-	function getDPValue(rowIdx: number, colIdx: number): number | null {
-		return frame?.state.dp?.[rowIdx]?.[colIdx] ?? null;
-	}
 
         function getCellDisplay(rowIdx: number, colIdx: number): string {
                 const isObstacle = heightMap[rowIdx][colIdx] === 1;
@@ -137,22 +119,6 @@
                 return 'text-gray-900 dark:text-white';
         }
 
-        function getGlobalBadges(rowIdx: number, colIdx: number): GlobalHighlightBadge[] {
-                if (!frame) return [];
-                const cellId = `${rowIdx},${colIdx}`;
-                return globalHighlightBadges.get(cellId) ?? [];
-        }
-
-        function getBadgeClasses(role: HighlightRole): string {
-                const tokens = HIGHLIGHT_COLOR_TOKENS[role];
-                return `${tokens.fill} ${tokens.text} ring-1 ${tokens.border} shadow-sm`;
-        }
-
-        function formatBadgeLabel(badge: GlobalHighlightBadge): string {
-                const prefix = badge.weight.label ? `${badge.weight.label}: ` : '';
-                const unit = badge.weight.unit ? ` ${badge.weight.unit}` : '';
-                return `${prefix}${badge.weight.value}${unit}`;
-        }
 </script>
 
 <div class="grid-container overflow-auto p-4">
@@ -160,15 +126,13 @@
 		<div class="text-gray-500 text-center py-8">No grid data available</div>
 	{:else}
                 <div
-                        class="grid gap-0.5 w-fit mx-auto"
+                        class="grid gap-1 w-fit mx-auto"
                         style:grid-template-columns={`repeat(${heightMap[0].length}, 40px)`}
                 >
-			{#each heightMap as row, rowIdx}
-				{#each row as height, colIdx}
-					{@const water = getWaterHeight(rowIdx, colIdx)}
-					{@const cellDisplay = getCellDisplay(rowIdx, colIdx)}
-					{@const isObstacle = mode === 'obstacle' && height === 1}
-                                        {@const badges = getGlobalBadges(rowIdx, colIdx)}
+                        {#each heightMap as row, rowIdx}
+                                {#each row as height, colIdx}
+                                        {@const cellDisplay = getCellDisplay(rowIdx, colIdx)}
+                                        {@const isObstacle = mode === 'obstacle' && height === 1}
                                         <div
                                                 class={`relative w-10 h-10 flex flex-col items-center justify-center rounded transition-colors ${getCellClasses(
                                                         rowIdx,
@@ -181,30 +145,6 @@
                                                 >
                                                         {cellDisplay}
                                                 </span>
-
-                                                <!-- Water overlay (for water algorithms) -->
-						{#if mode === 'height' && water > 0}
-							<div
-								class="absolute inset-0 bg-[var(--cell-water)] opacity-40 rounded flex items-end justify-center pb-0.5"
-							>
-                                                                <span class="text-[10px] font-bold text-cyan-900">💧{water}</span>
-                                                        </div>
-                                                {/if}
-
-                                                {#if badges.length > 0}
-                                                        <div class="pointer-events-none absolute inset-0 z-20 flex flex-wrap items-start justify-end gap-0.5 p-0.5">
-                                                                {#each badges as badge}
-                                                                        <span
-                                                                                class={`inline-flex min-w-[16px] items-center justify-center rounded-full px-1.5 py-0.5 text-[9px] font-semibold whitespace-nowrap ${getBadgeClasses(
-                                                                                        badge.role
-                                                                                )}`}
-                                                                                aria-hidden="true"
-                                                                        >
-                                                                                {formatBadgeLabel(badge)}
-                                                                        </span>
-                                                                {/each}
-                                                        </div>
-                                                {/if}
                                         </div>
                                 {/each}
                         {/each}
