@@ -1,105 +1,67 @@
 # Testing Guide
 
-## Test Coverage
+## Test suite overview
 
-### ✅ Implemented Tests (84 passing, 4 skipped)
+- The Vitest suite currently spans **17 test files** with **303 total tests**; **299 pass** and **4 are skipped** (timer-driven playback assertions that remain flaky under mocked timers).
+- Tests execute in the `happy-dom` environment with the Svelte plugin enabled, matching the configuration in `vitest.config.ts`.
 
-#### Core Components
-- **PlaybackController** (22/26 tests passing)
-  - All methods tested: `play`, `pause`, `stepForward`, `stepBack`, `reset`, `setSpeed`, `loadTrace`
-  - Coverage: 81.81% (exceeds 80% threshold)
-  - 4 timer-based tests skipped due to `$effect` async limitations
+## Suite breakdown
 
-#### Validation
-- **validation.ts** (21/21 tests passing)
-  - FrameSchema validation
-  - TraceSchema validation
-  - Helper functions (`validateTrace`, `validateFrameSequence`)
-  - Coverage: 100%
+### Core controllers
 
-#### Plugins
-- **trappingRainWater2** (18/18 tests passing)
-  - Input validation
-  - Trace generation
-  - Schema compliance
-  - Water volume calculations
-  - Coverage: 100%
+- `PlaybackController.test.svelte.ts` validates playback transitions, frame indexing, and speed controls with runes-backed state, while explicitly skipping four timer assertions that require a browser timer bridge.
+- `NavigationState.test.ts` and `NavigationState-persistence.test.ts` cover sidebar expansion, active-node tracking, and storage serialization, ensuring navigation state survives reloads.
 
-- **uniquePathsWithObstacles** (23/23 tests passing)
-  - Input validation
-  - Path calculations
-  - DP state verification
-  - Coverage: 100%
+### Navigation data & queries
 
-### ⏸️ Deferred Tests
+- Schema guards protect the navigation tree definition (`navigation-tree-schema.test.ts`), and query helpers validate ancestor discovery and flattened lookups (`navigation-tree-data.test.ts`, `tree-queries.test.ts`).
 
-#### UI Components (T009-T012)
-Component testing with Svelte 5 runes + happy-dom has limitations:
-- `@testing-library/svelte` render function encounters lifecycle issues with Svelte 5 runes
-- `mount(...)` is not available on the server (happy-dom limitation)
-- Svelte 5's `$state`, `$derived`, and `$effect` runes require browser environment
+### Algorithm plugins
 
-**Recommended Approaches:**
-1. **E2E Testing**: Use Playwright for full component integration tests
-2. **Manual Testing**: Verify UI components work correctly in dev mode
-3. **Unit Test Coverage**: Focus on logic/controller tests (already at 81-100%)
+- `src/lib/plugins/trappingRainWater2.test.ts` and `src/lib/plugins/uniquePathsWithObstacles.test.ts` verify trace generation, metrics, and validation logic for the two fully tested plugins.
+- Contract-style tests in `tests/unit/plugins/swimInWater.test.ts` exercise the Zod schema but do **not** import the runtime plugin, leaving execution coverage at 0% for `swimInWater.ts`.
 
-**Affected Components:**
-- GridRenderer.svelte
-- PlaybackControls.svelte
-- SpeedControl.svelte
-- StatusPanel.svelte
+### Shared component contracts
 
-All these components are simple presentational components with minimal logic. They primarily:
-- Bind to `PlaybackController` reactive state
-- Render DOM based on props
-- Call controller methods on user interaction
+- The component suites assert schema contracts for the visualization primitives (grid, priority queue, status display) rather than rendering actual `.svelte` files, so coverage for those modules remains 0%.
+- `tests/unit/panels/LegendPanel.test.ts` confirms legend configuration handling but likewise exercises the TypeScript configuration module instead of the Svelte component.
 
-The core logic is thoroughly tested in `PlaybackController` tests.
+### Integration smoke test
 
-## Running Tests
+- `tests/integration/shared-components.test.ts` provides a high-level contract test that cross-checks shared component schemas across multiple features, acting as a regression guard for the specification files.
+
+## Running tests
 
 ```bash
-# Run all tests
+# Run the full suite once
 pnpm test
 
-# Run with coverage
+# Run with coverage instrumentation
 pnpm test:coverage
 
-# Run in watch mode
+# Watch mode for local development
 pnpm test:watch
 
-# Run with UI
+# Launch the Vitest UI
 pnpm test:ui
 ```
 
-## Known Limitations
+## Coverage summary
 
-### Timer-Based Tests
-Four PlaybackController tests are skipped:
-- `should auto-advance frames at speed interval`
-- `should pause when reaching end`
-- `should stop auto-advancement`
-- `should affect playback interval`
+The latest `pnpm test:coverage` report highlights uneven coverage:
 
-**Reason**: Svelte 5's `$effect` intervals don't execute synchronously with `vi.advanceTimersByTime()` even when using `flushSync()`. This is a known limitation when testing reactive intervals with mocked timers.
+| Area | Statements | Notes |
+| --- | --- | --- |
+| Overall | 64.3% | Core controllers and validators are exercised; UI Svelte files are untouched by the current suites. |
+| `src/lib/core` | 91.25% | `NavigationState` reaches 100%, `PlaybackController` meets the 80% threshold but still misses timer branches. |
+| `src/lib/plugins` | 73.11% | `swimInWater.ts` remains untested in runtime scenarios, contributing 0% coverage for that file. |
+| `src/lib/components` & `src/lib/renderers` | 0% | Schema-based tests do not execute the `.svelte` files, leaving UI logic unverified. |
+| `src/lib/utils/MinHeap.ts` | 0% | The helper backs the Swim in Water implementation but lacks direct tests. |
 
-**Workaround**: These features are manually tested and work correctly in the running application.
+Svelte's compiler surfaces additional accessibility warnings during the coverage run (tabindex usage, missing `aria-selected`, deprecated `on:` directives), which should be treated as actionable test findings for UI components.
 
-## CI/CD
+## Known limitations
 
-Tests run automatically on:
-- Push to `main`, `master`, or `develop` branches
-- Pull requests targeting these branches
-
-See `.github/workflows/ci.yml` for the full CI pipeline.
-
-## Coverage Thresholds
-
-- **Critical components** (PlaybackController, validation, plugins): 80%
-- **UI components**: 60% (deferred to E2E testing)
-
-Current coverage:
-- PlaybackController: **81.81%** ✅
-- Validation: **100%** ✅
-- Plugins: **100%** ✅
+- Timer-driven playback behavior is only partially validated because mocked timers do not trigger `$effect`-scheduled intervals reliably in `happy-dom`; manual verification is still required for autoplay scenarios.
+- The absence of DOM-level component tests means interactions such as button clicks, keyboard navigation, and responsive layout changes rely on manual QA.
+- Performance targets from the constitution (trace generation <100 ms, smooth rendering for 20×20 grids) are not instrumented or enforced in the current suite.
