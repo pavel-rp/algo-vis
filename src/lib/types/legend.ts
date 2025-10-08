@@ -3,7 +3,7 @@ import type { HighlightRole } from './plugin';
 export interface LegendItem {
         role: HighlightRole;
         label: string;
-        description?: string;
+        description: string;
 }
 
 export interface LegendGroup {

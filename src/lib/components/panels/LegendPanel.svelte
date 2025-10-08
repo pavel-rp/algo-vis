@@ -1,13 +1,16 @@
 <script lang="ts">
-        import type { LegendGroup } from '$lib/types';
+        import type { HighlightRole, LegendGroup } from '$lib/types';
         import { createLegendGroups, type LegendDisplayGroup } from './legendConfig';
 
         interface Props {
                 extraGroups?: LegendGroup[];
+                activeRoles?: HighlightRole[];
         }
 
-        let { extraGroups = [] }: Props = $props();
-        let groups: LegendDisplayGroup[] = $derived.by(() => createLegendGroups(extraGroups));
+        let { extraGroups = [], activeRoles }: Props = $props();
+        let groups: LegendDisplayGroup[] = $derived.by(() =>
+                createLegendGroups({ extraGroups, activeRoles })
+        );
         let isCollapsed = $state(false);
 
         function toggleCollapse() {

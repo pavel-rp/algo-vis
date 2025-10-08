@@ -10,16 +10,18 @@
 	 */
 
 	import type { PageData } from './$types';
-	import { PlaybackController } from '$lib/core/PlaybackController.svelte';
-	import GridRenderer from '$lib/renderers/GridRenderer.svelte';
+        import { PlaybackController } from '$lib/core/PlaybackController.svelte';
+        import GridRenderer from '$lib/renderers/GridRenderer.svelte';
         import PlaybackControls from '$lib/components/PlaybackControls.svelte';
         import SpeedControl from '$lib/components/SpeedControl.svelte';
         import StatusPanel from '$lib/components/StatusPanel.svelte';
         import LegendPanel from '$lib/components/panels/LegendPanel.svelte';
         import PriorityQueueDisplay from '$lib/components/visualization/PriorityQueueDisplay.svelte';
-	import { trappingRainWater2Plugin } from '$lib/plugins/trappingRainWater2';
-	import { uniquePathsWithObstaclesPlugin } from '$lib/plugins/uniquePathsWithObstacles';
-	import { swimInWaterPlugin } from '$lib/plugins/swimInWater';
+        import { trappingRainWater2Plugin } from '$lib/plugins/trappingRainWater2';
+        import { uniquePathsWithObstaclesPlugin } from '$lib/plugins/uniquePathsWithObstacles';
+        import { swimInWaterPlugin } from '$lib/plugins/swimInWater';
+        import type { HighlightRole, Trace } from '$lib/types';
+        import { HIGHLIGHT_ROLES } from '$lib/types';
 
 	// Props from load function
 	let { data }: { data: PageData } = $props();
@@ -112,16 +114,40 @@
         // Derived legend groups (allow plugins to append extra entries)
         let legendGroups = $derived(algorithm.legend ?? []);
 
+        // Track which highlight roles appear in the active trace
+        let activeLegendRoles = $state<HighlightRole[]>([...HIGHLIGHT_ROLES]);
+
+        function extractLegendRoles(trace: Trace<any>): HighlightRole[] {
+                const roles = new Set<HighlightRole>();
+
+                for (const frame of trace.frames) {
+                        for (const marker of frame.focus ?? []) {
+                                roles.add(marker.role);
+                        }
+                        for (const marker of frame.neighbors ?? []) {
+                                roles.add(marker.role);
+                        }
+                        for (const highlight of frame.globalHighlights ?? []) {
+                                roles.add(highlight.role);
+                        }
+                }
+
+                return [...roles];
+        }
+
         // Load trace when algorithm or preset changes
         $effect(() => {
 		const preset = algorithm.presets[selectedPresetIndex];
 		const validation = algorithm.validateInput(preset.data);
 
-		if (validation.valid) {
-			const trace = algorithm.trace(preset.data);
-			controller.loadTrace(trace);
-		}
-	});
+                if (validation.valid) {
+                        const trace = algorithm.trace(preset.data);
+                        controller.loadTrace(trace);
+                        activeLegendRoles = extractLegendRoles(trace);
+                } else {
+                        activeLegendRoles = [];
+                }
+        });
 
 	function handlePresetChange(index: number) {
 		selectedPresetIndex = index;
@@ -180,7 +206,7 @@
                                 </div>
 
                                 <!-- Legend -->
-                                <LegendPanel extraGroups={legendGroups} />
+                                <LegendPanel extraGroups={legendGroups} activeRoles={activeLegendRoles} />
                         </div>
 
                         <!-- Right sidebar -->
