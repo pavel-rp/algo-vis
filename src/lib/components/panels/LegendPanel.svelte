@@ -62,7 +62,7 @@
                                                                 ></span>
                                                                 <div class="min-w-0 space-y-0.5">
                                                                         <p
-                                                                                class={`text-xs font-medium leading-snug ${item.tokens.text}`}
+                                                                                class="text-xs font-medium leading-snug text-slate-700 dark:text-slate-200"
                                                                                 data-testid={`legend-label-${item.role}`}
                                                                         >
                                                                                 {item.label}
