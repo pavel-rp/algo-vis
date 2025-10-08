@@ -10,15 +10,18 @@
 	 */
 
 	import type { PageData } from './$types';
-	import { PlaybackController } from '$lib/core/PlaybackController.svelte';
-	import GridRenderer from '$lib/renderers/GridRenderer.svelte';
-	import PlaybackControls from '$lib/components/PlaybackControls.svelte';
-	import SpeedControl from '$lib/components/SpeedControl.svelte';
-	import StatusPanel from '$lib/components/StatusPanel.svelte';
-	import PriorityQueueDisplay from '$lib/components/visualization/PriorityQueueDisplay.svelte';
-	import { trappingRainWater2Plugin } from '$lib/plugins/trappingRainWater2';
-	import { uniquePathsWithObstaclesPlugin } from '$lib/plugins/uniquePathsWithObstacles';
-	import { swimInWaterPlugin } from '$lib/plugins/swimInWater';
+        import { PlaybackController } from '$lib/core/PlaybackController.svelte';
+        import GridRenderer from '$lib/renderers/GridRenderer.svelte';
+        import PlaybackControls from '$lib/components/PlaybackControls.svelte';
+        import SpeedControl from '$lib/components/SpeedControl.svelte';
+        import StatusPanel from '$lib/components/StatusPanel.svelte';
+        import LegendPanel from '$lib/components/panels/LegendPanel.svelte';
+        import PriorityQueueDisplay from '$lib/components/visualization/PriorityQueueDisplay.svelte';
+        import { trappingRainWater2Plugin } from '$lib/plugins/trappingRainWater2';
+        import { uniquePathsWithObstaclesPlugin } from '$lib/plugins/uniquePathsWithObstacles';
+        import { swimInWaterPlugin } from '$lib/plugins/swimInWater';
+        import type { HighlightRole, Trace } from '$lib/types';
+        import { HIGHLIGHT_ROLES } from '$lib/types';
 
 	// Props from load function
 	let { data }: { data: PageData } = $props();
@@ -33,8 +36,8 @@
 	// Get algorithm plugin based on pluginId from route
 	const algorithm = $derived(pluginMap[data.pluginId as keyof typeof pluginMap]);
 
-	// Playback controller
-	const controller = new PlaybackController();
+        // Playback controller
+        const controller = new PlaybackController();
 
 	// Preset selection state
 	let selectedPresetIndex = $state(0);
@@ -108,16 +111,43 @@
 		algorithm.id === 'swim-in-water' || algorithm.id === 'trapping-rain-water-2'
 	);
 
-	// Load trace when algorithm or preset changes
-	$effect(() => {
+        // Derived legend groups (allow plugins to append extra entries)
+        let legendGroups = $derived(algorithm.legend ?? []);
+
+        // Track which highlight roles appear in the active trace
+        let activeLegendRoles = $state<HighlightRole[]>([...HIGHLIGHT_ROLES]);
+
+        function extractLegendRoles(trace: Trace<any>): HighlightRole[] {
+                const roles = new Set<HighlightRole>();
+
+                for (const frame of trace.frames) {
+                        for (const marker of frame.focus ?? []) {
+                                roles.add(marker.role);
+                        }
+                        for (const marker of frame.neighbors ?? []) {
+                                roles.add(marker.role);
+                        }
+                        for (const highlight of frame.globalHighlights ?? []) {
+                                roles.add(highlight.role);
+                        }
+                }
+
+                return [...roles];
+        }
+
+        // Load trace when algorithm or preset changes
+        $effect(() => {
 		const preset = algorithm.presets[selectedPresetIndex];
 		const validation = algorithm.validateInput(preset.data);
 
-		if (validation.valid) {
-			const trace = algorithm.trace(preset.data);
-			controller.loadTrace(trace);
-		}
-	});
+                if (validation.valid) {
+                        const trace = algorithm.trace(preset.data);
+                        controller.loadTrace(trace);
+                        activeLegendRoles = extractLegendRoles(trace);
+                } else {
+                        activeLegendRoles = [];
+                }
+        });
 
 	function handlePresetChange(index: number) {
 		selectedPresetIndex = index;
@@ -168,20 +198,25 @@
 		</div>
 
 		<!-- Main content -->
-		<div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
-			<!-- Visualization -->
-			<div class="lg:col-span-2 bg-white dark:bg-gray-800 rounded-lg shadow overflow-hidden">
-				<GridRenderer frame={controller.currentFrame} heightMap={gridData} mode={gridMode} />
-			</div>
+                <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+                        <!-- Visualization -->
+                        <div class="lg:col-span-2 space-y-4">
+                                <div class="bg-white dark:bg-gray-800 rounded-lg shadow overflow-hidden">
+                                        <GridRenderer frame={controller.currentFrame} heightMap={gridData} mode={gridMode} />
+                                </div>
 
-			<!-- Right sidebar -->
-			<div class="space-y-6">
-				<!-- Status Panel -->
-				<div class="bg-white dark:bg-gray-800 rounded-lg shadow p-6">
-					<StatusPanel {controller} />
-				</div>
+                                <!-- Legend -->
+                                <LegendPanel extraGroups={legendGroups} activeRoles={activeLegendRoles} />
+                        </div>
 
-				<!-- Priority Queue Display (conditionally) -->
+                        <!-- Right sidebar -->
+                        <div class="space-y-6">
+                                <!-- Status Panel -->
+                                <div class="bg-white dark:bg-gray-800 rounded-lg shadow p-6">
+                                        <StatusPanel {controller} />
+                                </div>
+
+                                <!-- Priority Queue Display (conditionally) -->
 				{#if usesPriorityQueue && queueData}
 					<PriorityQueueDisplay items={queueData.items} remainingCount={queueData.remainingCount} />
 				{/if}

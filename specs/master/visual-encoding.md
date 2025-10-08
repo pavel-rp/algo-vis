@@ -164,6 +164,15 @@ Renderers must apply states in the following z-order (bottom → top):
 - Automated renderers should expose a helper (e.g., `resolveStateStyles(state, theme)`) that reads directly from this spec to avoid divergence.
 - Algorithm categories not explicitly listed (e.g., tries, suffix arrays, monotonic stacks) must map their states to the closest descriptors here (`component`, `frontier`, `window`, `pruned`) or document new tokens with accessibility data.
 
+## 7. Legend Synchronization Requirements
+
+- The shared `LegendPanel` component renders one entry for every `HighlightRole` declared in `HIGHLIGHT_COLOR_TOKENS`. Core roles are grouped into **Local states** (`current`, `frontier`, `queued`, `visited`) and **Global overlays** (`start`, `goal`, `path-active`, `path-final`, `obstacle`).
+- Each legend item **must** provide both a label and a descriptive sentence. Entries missing descriptions are automatically suppressed to prevent empty swatches.
+- The runtime legend filters itself to the highlight roles that actually appear in the active trace so learners only see states used by the current algorithm.
+- Plugins that introduce additional highlight roles must extend `HIGHLIGHT_COLOR_TOKENS` **and** pass `legend` groups to the panel so all colors remain documented in the UI.
+- When reusing existing roles in specialized ways (e.g., distinguishing multiple frontier queues), document the interpretation in the plugin README but keep the canonical label so learners see consistent terminology across visualizations.
+- Any pull request that modifies highlight colors or roles MUST include corresponding updates to the legend test coverage (`tests/unit/panels/LegendPanel.test.ts`).
+
 ---
 
 For questions or proposals to extend the palette, open an issue referencing this file.
