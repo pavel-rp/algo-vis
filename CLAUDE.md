@@ -1,4 +1,4 @@
-# Claude Context: Algorithm Visualizer
+﻿# Claude Context: Algorithm Visualizer
 
 **Project**: Algorithm Visualizer (algo-vis)  
 **Version**: 1.0.0  
@@ -70,4 +70,5 @@ pnpm build          # Production build output in build/
 1. **Follow the constitution** – Prioritize reusable, algorithm-agnostic components and ensure new features expose visualization-friendly traces.
 2. **Extend specs first** – Update or create entries under `specs/` before implementing a feature to keep the planning artifacts current.
 3. **Add real component tests** – Where possible, supplement schema tests with `@testing-library/svelte` suites that exercise DOM behavior.
-4. **Track accessibility** – Address compiler warnings surfaced during `pnpm test:coverage` before merging UI changes.
+4. **Track accessibility** - Address compiler warnings surfaced during `pnpm test:coverage` before merging UI changes.
+5. **Respect rune access semantics** - `$state` variables are read/written directly, but accessors produced with `$derived()`/`$derived.by()` must still be invoked (e.g., `activePhase()`); don't drop the parentheses, and always null-check before calling helpers that expect data.

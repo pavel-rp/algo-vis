@@ -199,7 +199,7 @@ describe('Navigation Tree Data Structure', () => {
 
 			collectAlgorithms(navigationTree.rootNodes);
 
-			expect(algorithms).toHaveLength(3);
+			expect(algorithms).toHaveLength(4);
 		});
 
 		it('should contain trapping-rain-water-2 algorithm', () => {

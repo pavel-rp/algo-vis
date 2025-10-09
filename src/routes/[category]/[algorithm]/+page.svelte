@@ -12,6 +12,7 @@
 	import type { PageData } from './$types';
         import { PlaybackController } from '$lib/core/PlaybackController.svelte';
         import GridRenderer from '$lib/renderers/GridRenderer.svelte';
+        import PhaseContainer from '$lib/components/visualization/PhaseContainer.svelte';
         import PlaybackControls from '$lib/components/PlaybackControls.svelte';
         import SpeedControl from '$lib/components/SpeedControl.svelte';
         import StatusPanel from '$lib/components/StatusPanel.svelte';
@@ -20,6 +21,7 @@
         import { trappingRainWater2Plugin } from '$lib/plugins/trappingRainWater2';
         import { uniquePathsWithObstaclesPlugin } from '$lib/plugins/uniquePathsWithObstacles';
         import { swimInWaterPlugin } from '$lib/plugins/swimInWater';
+        import { findGCDPlugin } from '$lib/plugins/findGCD';
         import type { HighlightRole, Trace } from '$lib/types';
         import { HIGHLIGHT_ROLES } from '$lib/types';
 
@@ -30,7 +32,8 @@
 	const pluginMap = {
 		'trapping-rain-water-2': trappingRainWater2Plugin,
 		'unique-paths-with-obstacles': uniquePathsWithObstaclesPlugin,
-		'swim-in-water': swimInWaterPlugin
+		'swim-in-water': swimInWaterPlugin,
+		'find-gcd-array': findGCDPlugin
 	} as const;
 
 	// Get algorithm plugin based on pluginId from route
@@ -105,6 +108,9 @@
                         remainingCount: Math.max(0, sorted.length - topItems.length)
                 };
         });
+
+	// Check if algorithm uses multi-phase visualization
+	let usesPhases = $derived(algorithm.phases !== undefined && algorithm.phases.length > 0);
 
 	// Check if algorithm uses priority queue
 	let usesPriorityQueue = $derived(
@@ -201,12 +207,27 @@
                 <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
                         <!-- Visualization -->
                         <div class="lg:col-span-2 space-y-4">
-                                <div class="bg-white dark:bg-gray-800 rounded-lg shadow overflow-hidden">
-                                        <GridRenderer frame={controller.currentFrame} heightMap={gridData} mode={gridMode} />
-                                </div>
+				{#if usesPhases}
+					<!-- Multi-phase visualization (GCD, etc.) -->
+					{#if controller.currentFrame}
+						<PhaseContainer
+							phases={algorithm.phases}
+							currentStep={controller.currentFrame}
+						/>
+					{:else}
+						<div class="bg-white dark:bg-gray-800 rounded-lg shadow p-6">
+							<p class="text-gray-500">Loading visualization...</p>
+						</div>
+					{/if}
+				{:else}
+					<!-- Grid-based visualization (default) -->
+	                                <div class="bg-white dark:bg-gray-800 rounded-lg shadow overflow-hidden">
+        	                                <GridRenderer frame={controller.currentFrame} heightMap={gridData} mode={gridMode} />
+                	                </div>
 
-                                <!-- Legend -->
-                                <LegendPanel extraGroups={legendGroups} activeRoles={activeLegendRoles} />
+	                                <!-- Legend -->
+        	                        <LegendPanel extraGroups={legendGroups} activeRoles={activeLegendRoles} />
+				{/if}
                         </div>
 
                         <!-- Right sidebar -->

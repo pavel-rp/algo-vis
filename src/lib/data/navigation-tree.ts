@@ -11,8 +11,12 @@
  * - Graphs
  *   - Path Finding
  *     - Unique Paths with Obstacles
+ * - Math
+ *   - Number Theory
+ *     - Find Greatest Common Divisor of Array
  *
  * Feature: 003-move-the-navigation
+ * Feature: 005-new-algorithm-visualization (GCD Array)
  * Date: 2025-10-06
  */
 
@@ -71,6 +75,27 @@ export const navigationTree: NavigationTree = {
 							label: 'Swim in Rising Water',
 							pluginId: 'swim-in-water',
 							path: '/graphs/swim-in-water'
+						}
+					]
+				}
+			]
+		},
+		{
+			type: 'category',
+			id: 'math',
+			label: 'Math',
+			children: [
+				{
+					type: 'category',
+					id: 'math-number-theory',
+					label: 'Number Theory',
+					children: [
+						{
+							type: 'algorithm',
+							id: 'find-gcd-array',
+							label: 'Find Greatest Common Divisor of Array',
+							pluginId: 'find-gcd-array',
+							path: '/math/find-gcd-array'
 						}
 					]
 				}
