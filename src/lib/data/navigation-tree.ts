@@ -29,22 +29,36 @@ export const navigationTree: NavigationTree = {
 			id: 'dynamic-programming',
 			label: 'Dynamic Programming',
 			children: [
-				{
-					type: 'category',
-					id: 'dp-2d-array',
-					label: '2D Array',
-					children: [
-						{
-							type: 'algorithm',
-							id: 'trapping-rain-water-2',
-							label: 'Trapping Rain Water II',
-							pluginId: 'trapping-rain-water-2',
-							path: '/dynamic-programming/trapping-rain-water-2'
-						}
-					]
-				}
-			]
-		},
+                                {
+                                        type: 'category',
+                                        id: 'dp-2d-array',
+                                        label: '2D Array',
+                                        children: [
+                                                {
+                                                        type: 'algorithm',
+                                                        id: 'trapping-rain-water-2',
+                                                        label: 'Trapping Rain Water II',
+                                                        pluginId: 'trapping-rain-water-2',
+                                                        path: '/dynamic-programming/trapping-rain-water-2'
+                                                }
+                                        ]
+                                },
+                                {
+                                        type: 'category',
+                                        id: 'dp-scheduling',
+                                        label: 'Scheduling & Pipelines',
+                                        children: [
+                                                {
+                                                        type: 'algorithm',
+                                                        id: 'min-time-to-brew-potions',
+                                                        label: 'Minimum Time to Brew Potions',
+                                                        pluginId: 'min-time-to-brew-potions',
+                                                        path: '/dynamic-programming/min-time-to-brew-potions'
+                                                }
+                                        ]
+                                }
+                        ]
+                },
 		{
 			type: 'category',
 			id: 'graphs',
