@@ -30,7 +30,7 @@
                         type="button"
                         class="inline-flex items-center gap-1 rounded-md border border-transparent bg-slate-100/60 dark:bg-slate-800/60 px-2 py-1 text-xs font-medium text-slate-700 dark:text-slate-200 hover:bg-slate-200/70 dark:hover:bg-slate-700/70 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-slate-400"
                         aria-expanded={!isCollapsed}
-                        on:click={toggleCollapse}
+                        onclick={toggleCollapse}
                 >
                         <span>{isCollapsed ? 'Show' : 'Hide'}</span>
                         <svg

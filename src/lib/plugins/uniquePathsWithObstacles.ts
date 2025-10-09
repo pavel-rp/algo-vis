@@ -175,9 +175,17 @@ function uniquePathsWithObstacles(obstacleGrid: number[][]): Trace<DPState> {
 
                                 const neighbors = [];
                                 if (i > 0)
-                                        neighbors.push({ type: 'grid-cell' as const, id: `${i - 1},${j}`, role: 'path-active' }); // top
+                                        neighbors.push({
+                                                type: 'grid-cell' as const,
+                                                id: `${i - 1},${j}`,
+                                                role: 'path-active' as const
+                                        }); // top
                                 if (j > 0)
-                                        neighbors.push({ type: 'grid-cell' as const, id: `${i},${j - 1}`, role: 'path-active' }); // left
+                                        neighbors.push({
+                                                type: 'grid-cell' as const,
+                                                id: `${i},${j - 1}`,
+                                                role: 'path-active' as const
+                                        }); // left
 
                                 frames.push({
                                         step: step++,
@@ -235,7 +243,7 @@ function uniquePathsWithObstacles(obstacleGrid: number[][]): Trace<DPState> {
                         const id = `${current.row},${current.col}`;
                         path.unshift(id);
 
-                        const prev = predecessor[current.row][current.col];
+                        const prev: { row: number; col: number } | null = predecessor[current.row][current.col];
                         if (!prev) break;
                         current = prev;
                 }
@@ -265,7 +273,12 @@ function uniquePathsWithObstacles(obstacleGrid: number[][]): Trace<DPState> {
 		frames,
 		totalSteps: frames.length,
 		completed: true,
-		metadata: { algorithm: 'Unique Paths with Obstacles', totalPaths: result }
+                metadata: {
+                        algorithm: 'Unique Paths with Obstacles',
+                        totalPaths: result,
+                        leetcode: 63,
+                        leetcodeUrl: 'https://leetcode.com/problems/unique-paths-ii/'
+                }
 	};
 }
 
@@ -277,56 +290,53 @@ export const uniquePathsWithObstaclesPlugin: AlgorithmPlugin<number[][], DPState
 	category: 'Graphs',
 	subcategory: 'Path Finding',
 	visualizationType: 'grid',
-	presets: [
-		{
-			name: 'Simple 3×3',
-			description: '3×3 grid with one obstacle',
-			data: [
-				[0, 0, 0],
-				[0, 1, 0],
-				[0, 0, 0]
-			]
-		},
-		{
-			name: 'Classic Example',
-			description: '3×3 grid with obstacle in middle',
-			data: [
-				[0, 0, 0],
-				[0, 1, 0],
-				[0, 0, 0]
-			]
-		},
-		{
-			name: 'Complex Path',
-			description: '4×4 grid with multiple obstacles',
-			data: [
-				[0, 0, 0, 0],
-				[0, 1, 0, 0],
-				[0, 0, 1, 0],
-				[0, 0, 0, 0]
-			]
-		},
-		{
-			name: 'Blocked Path',
-			description: '3×3 with starting position blocked',
-			data: [
-				[1, 0, 0],
-				[0, 0, 0],
-				[0, 0, 0]
-			]
-		},
-		{
-			name: 'Large Grid',
-			description: '5×5 grid with scattered obstacles',
-			data: [
-				[0, 0, 0, 0, 0],
-				[0, 1, 1, 0, 0],
-				[0, 0, 0, 1, 0],
-				[0, 0, 1, 0, 0],
-				[0, 0, 0, 0, 0]
-			]
-		}
-	],
+        presets: [
+                {
+                        name: 'LeetCode Example 1',
+                        description: 'Official example grid with answer = 2 (paths go around center obstacle)',
+                        data: [
+                                [0, 0, 0],
+                                [0, 1, 0],
+                                [0, 0, 0]
+                        ]
+                },
+                {
+                        name: 'LeetCode Example 2',
+                        description: 'Official 2×2 example with answer = 1 (single detour)',
+                        data: [
+                                [0, 1],
+                                [0, 0]
+                        ]
+                },
+                {
+                        name: 'LeetCode Example 3',
+                        description: 'Official example with blocked start (answer = 0)',
+                        data: [
+                                [1, 0]
+                        ]
+                },
+                {
+                        name: 'Complex Path',
+                        description: '4×4 grid with multiple obstacles to demonstrate DP transitions',
+                        data: [
+                                [0, 0, 0, 0],
+                                [0, 1, 0, 0],
+                                [0, 0, 1, 0],
+                                [0, 0, 0, 0]
+                        ]
+                },
+                {
+                        name: 'Large Grid Scenario',
+                        description: '5×5 grid inspired by LeetCode constraints with multiple obstacles',
+                        data: [
+                                [0, 0, 0, 0, 0],
+                                [0, 1, 1, 0, 0],
+                                [0, 0, 0, 1, 0],
+                                [0, 0, 1, 0, 0],
+                                [0, 0, 0, 0, 0]
+                        ]
+                }
+        ],
 	trace: uniquePathsWithObstacles,
 	validateInput: (input: number[][]): ValidationResult => {
 		if (!Array.isArray(input) || input.length === 0) {

@@ -128,18 +128,18 @@ describe('uniquePathsWithObstaclesPlugin', () => {
 			expect(lastFrame.metrics?.['Total Paths']).toBe(2);
 		});
 
-                it('should calculate correct paths for 3x3 grid with obstacle', () => {
-                        const grid = [
-                                [0, 0, 0],
-                                [0, 1, 0],
-                                [0, 0, 0]
-                        ];
-                        const trace = uniquePathsWithObstaclesPlugin.trace(grid);
-                        const lastFrame = trace.frames[trace.frames.length - 1];
+		it('should calculate correct paths for 3x3 grid with obstacle', () => {
+			const grid = [
+				[0, 0, 0],
+				[0, 1, 0],
+				[0, 0, 0]
+			];
+			const trace = uniquePathsWithObstaclesPlugin.trace(grid);
+			const lastFrame = trace.frames[trace.frames.length - 1];
 
-                        // Center obstacle blocks direct paths
-                        expect(lastFrame.metrics?.['Total Paths']).toBe(2);
-                });
+			// Center obstacle blocks direct paths
+			expect(lastFrame.metrics?.['Total Paths']).toBe(2);
+		});
 
                 it('should highlight a valid reconstructed path when one exists', () => {
                         const grid = [

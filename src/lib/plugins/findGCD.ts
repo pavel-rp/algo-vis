@@ -262,7 +262,9 @@ function trace(input: GCDInput): Trace<GCDState> {
 			inputSize: nums.length,
 			min: currentMin,
 			max: currentMax,
-			result: m
+			result: m,
+			leetcode: 1979,
+			leetcodeUrl: 'https://leetcode.com/problems/find-greatest-common-divisor-of-array/'
 		}
 	};
 }
@@ -325,24 +327,24 @@ const phases: Phase[] = [
  */
 const presets: InputPreset<GCDInput>[] = [
 	{
-		name: 'Simple Case',
-		description: 'Small array with distinct values',
+		name: 'LeetCode Example 1',
+		description: 'Official sample with min=2, max=10 → GCD = 2',
 		data: { nums: [2, 5, 6, 9, 10] }
 	},
 	{
-		name: 'Common Factors',
-		description: 'Array with common divisor',
+		name: 'LeetCode Example 2',
+		description: 'Official sample returning 1 because numbers share no common divisor > 1',
+		data: { nums: [7, 5, 6, 8, 3] }
+	},
+	{
+		name: 'LeetCode Example 3',
+		description: 'Official sample with identical numbers yielding GCD = 3',
+		data: { nums: [3, 3] }
+	},
+	{
+		name: 'Common Factors Demo',
+		description: 'Array with shared divisor 6',
 		data: { nums: [12, 18, 24] }
-	},
-	{
-		name: 'Extreme Range',
-		description: 'Maximum value range (GCD = 1)',
-		data: { nums: [100, 1] }
-	},
-	{
-		name: 'All Same',
-		description: 'Identical elements (GCD = element)',
-		data: { nums: [7, 7, 7] }
 	},
 	{
 		name: 'Fibonacci Worst-Case',

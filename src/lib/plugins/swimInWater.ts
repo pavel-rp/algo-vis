@@ -12,7 +12,7 @@
  * Space Complexity: O(N²)
  */
 
-import type { AlgorithmPlugin, Trace, Frame, ValidationResult } from '$lib/types';
+import type { AlgorithmPlugin, Trace, Frame, ValidationResult, FocusMarker } from '$lib/types';
 import type { GridState } from '$lib/types/state';
 import { SwimInWaterInputSchema } from '$lib/types/swimInWater';
 import { MinHeap } from '$lib/utils/MinHeap';
@@ -146,7 +146,7 @@ function swimInRisingWaterTrace(input: { grid: number[][] }): Trace<GridState> {
 		}
 
 		// Explore neighbors
-		const neighbors = [];
+		const neighbors: FocusMarker[] = [];
 		const neighborCells = [];
 
 		for (const [dr, dc] of directions) {
@@ -157,9 +157,9 @@ function swimInRisingWaterTrace(input: { grid: number[][] }): Trace<GridState> {
 			if (newRow >= 0 && newRow < n && newCol >= 0 && newCol < n && !visited[newRow][newCol]) {
 				visited[newRow][newCol] = true;
 				heap.push({ elevation: grid[newRow][newCol], row: newRow, col: newCol });
-                                neighbors.push({ type: 'grid-cell' as const, id: `${newRow},${newCol}`, role: 'frontier' });
-                                neighborCells.push({ row: newRow, col: newCol, elev: grid[newRow][newCol] });
-                        }
+				neighbors.push({ type: 'grid-cell' as const, id: `${newRow},${newCol}`, role: 'frontier' as const });
+				neighborCells.push({ row: newRow, col: newCol, elev: grid[newRow][newCol] });
+			}
                 }
 
                 // Create description
@@ -173,6 +173,9 @@ function swimInRisingWaterTrace(input: { grid: number[][] }): Trace<GridState> {
 
                 desc += `\n${maxNote}`;
 
+		// Determine focus role for current cell
+		const focusRole: FocusMarker['role'] = row === n - 1 && col === n - 1 ? 'goal' : 'current';
+
 		// Capture frame after exploring neighbors
                 frames.push({
                         step: step++,
@@ -181,13 +184,13 @@ function swimInRisingWaterTrace(input: { grid: number[][] }): Trace<GridState> {
                                 visited: visited.map((row) => [...row]),
                                 heap: heap.toArray()
                         },
-                        focus: [
-                                {
-                                        type: 'grid-cell',
-                                        id: `${row},${col}`,
-                                        role: row === n - 1 && col === n - 1 ? 'goal' : 'current'
-                                }
-                        ],
+			focus: [
+				{
+					type: 'grid-cell' as const,
+					id: `${row},${col}`,
+					role: focusRole
+				}
+			],
                         neighbors: neighbors.length > 0 ? neighbors : undefined,
                         globalHighlights: snapshotHighlights(),
                         description: desc,
@@ -253,28 +256,17 @@ export const swimInWaterPlugin: AlgorithmPlugin<{ grid: number[][] }, GridState>
 	 */
 	presets: [
 		{
-			name: 'Small 3×3',
+			name: 'LeetCode Example 1',
 			data: {
 				grid: [
-					[0, 2, 1],
-					[3, 1, 4],
-					[7, 5, 6]
+					[0, 2],
+					[1, 3]
 				]
 			},
-			description: 'Small example with answer 6. Path: (0,0)→(0,1)→(1,1)→(1,2)→(2,2), max elevation = 6'
+			description: 'Official example with answer = 3. Elevation forces waiting until time 3 to reach the goal.'
 		},
 		{
-			name: 'Simple 2×2',
-			data: {
-				grid: [
-					[0, 1],
-					[2, 3]
-				]
-			},
-			description: 'Minimal example with answer 3. Must wait for time 3 to swim to bottom-right.'
-		},
-		{
-			name: 'Medium 5×5 Spiral',
+			name: 'LeetCode Example 2',
 			data: {
 				grid: [
 					[0, 1, 2, 3, 4],
@@ -285,7 +277,19 @@ export const swimInWaterPlugin: AlgorithmPlugin<{ grid: number[][] }, GridState>
 				]
 			},
 			description:
-				'Spiral pattern with answer 16. Tests priority queue with many items. Path goes around the spiral.'
+				'Official spiral layout with answer = 16. Demonstrates how the min-heap explores lowest elevations first.'
+		},
+		{
+			name: '3×3 Demo Grid',
+			data: {
+				grid: [
+					[0, 2, 1],
+					[3, 1, 4],
+					[7, 5, 6]
+				]
+			},
+			description:
+				'Small illustrative grid with answer = 6. Shows how the frontier expands with mixed elevations.'
 		},
 		{
 			name: 'Edge Case: High Wall',

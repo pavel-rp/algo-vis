@@ -29,14 +29,16 @@
 	}
 </script>
 
-<nav role="tree" aria-label="Algorithm categories" class="overflow-y-auto">
-	{#each tree.rootNodes as node (node.id)}
-		<TreeNode
-			{node}
-			level={0}
-			{state}
-			onToggle={handleToggle}
-			onSelect={handleSelect}
-		/>
-	{/each}
+<nav aria-label="Algorithm categories" class="overflow-y-auto">
+	<div role="tree">
+		{#each tree.rootNodes as node (node.id)}
+			<TreeNode
+				{node}
+				level={0}
+				{state}
+				onToggle={handleToggle}
+				onSelect={handleSelect}
+			/>
+		{/each}
+	</div>
 </nav>
