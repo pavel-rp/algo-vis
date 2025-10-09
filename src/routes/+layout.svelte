@@ -15,9 +15,11 @@
 	import { NavigationState } from '$lib/core/NavigationState.svelte';
 	import { navigationTree } from '$lib/data/navigation-tree';
 	import { getAncestorIds } from '$lib/utils/navigation-queries';
+	import type { Snippet } from 'svelte';
 
 	// Create NavigationState instance (persists across navigation)
 	const navState = new NavigationState();
+	const { children } = $props<{ children: Snippet }>();
 
 	// Track previous pathname to avoid infinite loops
 	let previousPathname = $state('');
@@ -56,6 +58,6 @@
 
 <!-- Main content area -->
 <main class="min-h-screen">
-	<slot />
+	{@render children()}
 </main>
 

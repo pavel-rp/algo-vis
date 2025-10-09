@@ -12,6 +12,7 @@
 	import type { NavigationNode } from '$lib/types/navigation';
 	import type { NavigationState } from '$lib/core/NavigationState.svelte';
 	import { isCategoryNode, isAlgorithmNode } from '$lib/types/navigation';
+	import TreeNodeRecursive from './TreeNode.svelte';
 
 	interface TreeNodeProps {
 		node: NavigationNode;
@@ -37,7 +38,7 @@
 
 {#if isCategoryNode(node)}
 	<!-- Category Node: Expandable button with children -->
-	<div role="treeitem" aria-expanded={isExpanded}>
+	<div role="treeitem" aria-expanded={isExpanded} aria-selected={isActive}>
 		<button
 			type="button"
 			class="w-full flex items-center gap-2 px-3 py-2 text-left text-gray-700 hover:bg-gray-100 transition-colors"
@@ -61,7 +62,7 @@
 			<!-- Recursive children -->
 			<div role="group">
 				{#each node.children as childNode (childNode.id)}
-					<svelte:self
+					<TreeNodeRecursive
 						node={childNode}
 						level={level + 1}
 						{state}
@@ -77,6 +78,7 @@
 	<a
 		href={node.path}
 		role="treeitem"
+		aria-selected={isActive}
 		class="block px-3 py-2 text-gray-600 hover:bg-gray-100 transition-colors {isActive
 			? 'bg-blue-50 text-blue-600 font-medium border-l-4 border-blue-600'
 			: ''}"
