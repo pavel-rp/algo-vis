@@ -183,9 +183,9 @@ describe('Navigation Tree Data Structure', () => {
 		});
 	});
 
-	describe('initial algorithm content', () => {
-		it('should contain exactly 3 initial algorithms', () => {
-			const algorithms: AlgorithmNode[] = [];
+        describe('initial algorithm content', () => {
+                it('should contain exactly 5 initial algorithms', () => {
+                        const algorithms: AlgorithmNode[] = [];
 
 			function collectAlgorithms(nodes: typeof navigationTree.rootNodes): void {
 				for (const node of nodes) {
@@ -199,8 +199,8 @@ describe('Navigation Tree Data Structure', () => {
 
 			collectAlgorithms(navigationTree.rootNodes);
 
-			expect(algorithms).toHaveLength(4);
-		});
+                        expect(algorithms).toHaveLength(5);
+                });
 
 		it('should contain trapping-rain-water-2 algorithm', () => {
 			const algorithms: AlgorithmNode[] = [];

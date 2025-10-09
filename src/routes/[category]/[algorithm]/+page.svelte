@@ -22,6 +22,7 @@
         import { uniquePathsWithObstaclesPlugin } from '$lib/plugins/uniquePathsWithObstacles';
         import { swimInWaterPlugin } from '$lib/plugins/swimInWater';
         import { findGCDPlugin } from '$lib/plugins/findGCD';
+        import { minTimeToBrewPotionsPlugin } from '$lib/plugins/minTimeToBrewPotions';
         import type { HighlightRole, Trace } from '$lib/types';
         import { HIGHLIGHT_ROLES } from '$lib/types';
 
@@ -29,12 +30,13 @@
 	let { data }: { data: PageData } = $props();
 
 	// Map plugin IDs to plugin instances
-	const pluginMap = {
-		'trapping-rain-water-2': trappingRainWater2Plugin,
-		'unique-paths-with-obstacles': uniquePathsWithObstaclesPlugin,
-		'swim-in-water': swimInWaterPlugin,
-		'find-gcd-array': findGCDPlugin
-	} as const;
+        const pluginMap = {
+                'trapping-rain-water-2': trappingRainWater2Plugin,
+                'unique-paths-with-obstacles': uniquePathsWithObstaclesPlugin,
+                'swim-in-water': swimInWaterPlugin,
+                'find-gcd-array': findGCDPlugin,
+                'min-time-to-brew-potions': minTimeToBrewPotionsPlugin
+        } as const;
 
 	// Get algorithm plugin based on pluginId from route
 	const algorithm = $derived(pluginMap[data.pluginId as keyof typeof pluginMap]);
@@ -47,9 +49,15 @@
 	let currentPreset = $derived(algorithm.presets[selectedPresetIndex]);
 
 	// Grid mode based on algorithm
-	let gridMode = $derived(
-		algorithm.id === 'unique-paths-with-obstacles' ? ('obstacle' as const) : ('height' as const)
-	); // swim-in-water and trapping-rain-water-2 use 'height' mode
+        let gridMode = $derived(() => {
+                if (algorithm.id === 'unique-paths-with-obstacles') {
+                        return 'obstacle' as const;
+                }
+                if (algorithm.id === 'min-time-to-brew-potions') {
+                        return 'dp' as const;
+                }
+                return 'height' as const;
+        }); // swim-in-water and trapping-rain-water-2 use 'height' mode
 
 	// Extract grid data based on algorithm
 	let gridData = $derived.by(() => {
