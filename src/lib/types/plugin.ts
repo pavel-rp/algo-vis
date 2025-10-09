@@ -3,9 +3,12 @@
  *
  * Core interfaces for the algorithm visualization framework.
  * Based on contracts/plugin-interface.ts from design docs.
+ *
+ * Feature 005: Added multi-phase support for complex algorithms
  */
 
 import type { LegendGroup } from './legend';
+import type { Phase } from './phase';
 
 export const HIGHLIGHT_ROLES = [
         'start',
@@ -49,6 +52,7 @@ export interface Frame<TState = any> {
         globalHighlights?: GlobalHighlight[];
         metrics?: Record<string, number | string>;
         description: string;
+        phaseId?: string; // Feature 005: Optional phase identifier for multi-step algorithms
 }
 
 export interface Trace<TState = any> {
@@ -87,4 +91,5 @@ export interface AlgorithmPlugin<TInput = any, TState = any> {
         validateInput(input: TInput): ValidationResult;
         code?: CodeDefinition;
         legend?: LegendGroup[];
+        phases?: Phase[]; // Feature 005: Multi-phase visualization support (optional for backward compatibility)
 }

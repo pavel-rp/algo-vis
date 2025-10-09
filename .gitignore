@@ -102,3 +102,6 @@ vite.config.js.timestamp-*
 .env.test.local
 .env.production.local
 .env.local
+
+# Playwright files
+.playwright-mcp
