@@ -60,11 +60,26 @@
         }); // swim-in-water and trapping-rain-water-2 use 'height' mode
 
 	// Extract grid data based on algorithm
-	let gridData = $derived.by(() => {
-		const data = currentPreset.data;
-		// swimInWater has { grid: number[][] }, others have raw number[][]
-		return data.grid ? data.grid : data;
-	});
+        let gridData = $derived.by(() => {
+                const frameGrid = controller.currentFrame?.state?.grid;
+                if (Array.isArray(frameGrid) && frameGrid.length > 0) {
+                        return frameGrid;
+                }
+
+                const data = currentPreset.data as unknown;
+                if (data && typeof data === 'object' && 'grid' in (data as Record<string, unknown>)) {
+                        const presetGrid = (data as { grid?: unknown }).grid;
+                        if (Array.isArray(presetGrid)) {
+                                return presetGrid as number[][];
+                        }
+                }
+
+                if (Array.isArray(data) && data.every((row) => Array.isArray(row))) {
+                        return data as number[][];
+                }
+
+                return [] as number[][];
+        });
 
 	// Format priority queue data for display
         let queueData = $derived.by(() => {
