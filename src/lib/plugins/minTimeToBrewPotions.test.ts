@@ -71,6 +71,14 @@ describe('minTimeToBrewPotionsPlugin', () => {
                         expect(trace.frames.length).toBeGreaterThanOrEqual(expectedMinimumFrames);
                 });
 
+                it('renders the base grid as duration (skill × mana) costs instead of zero placeholders', () => {
+                        const trace = minTimeToBrewPotionsPlugin.trace(sampleInput);
+                        const firstFrame = trace.frames[0];
+
+                        expect(firstFrame.state?.grid?.[0]?.[0]).toBe(5);
+                        expect(firstFrame.state?.grid?.[1]?.[3]).toBe(10);
+                });
+
                 it('records finish times in the dp matrix', () => {
                         const trace = minTimeToBrewPotionsPlugin.trace(sampleInput);
                         const lastProcessingFrame = trace.frames.at(-2);

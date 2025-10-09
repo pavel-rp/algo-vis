@@ -13,7 +13,11 @@ import type { GridState } from '$lib/types/state';
 export interface BrewingInput {
         skill: number[];
         mana: number[];
-        /** Optional helper grid for renderer sizing (derived automatically if omitted) */
+        /**
+         * Optional helper grid for renderer sizing. The visualization overwrites
+         * the values with duration (skill × mana) pairs so viewers see the base
+         * processing cost rather than placeholder zeroes.
+         */
         grid?: number[][];
 }
 
@@ -52,14 +56,10 @@ function cloneMatrix<T>(matrix: T[][]): T[][] {
         return matrix.map((row) => [...row]);
 }
 
-function ensureGrid(input: BrewingInput): number[][] {
-        if (Array.isArray(input.grid) && input.grid.length > 0 && Array.isArray(input.grid[0])) {
-                return cloneMatrix(input.grid);
-        }
-
-        const n = input.skill.length;
-        const m = input.mana.length;
-        return Array.from({ length: n }, () => Array(m).fill(0));
+function buildDurationGrid(skill: number[], mana: number[]): number[][] {
+        return Array.from({ length: skill.length }, (_, wizardIndex) =>
+                Array.from({ length: mana.length }, (_, potionIndex) => skill[wizardIndex] * mana[potionIndex])
+        );
 }
 
 function validateInput(input: BrewingInput): ValidationResult {
@@ -157,10 +157,8 @@ function trace(input: BrewingInput): Trace<BrewingState> {
         const n = skill.length;
         const m = mana.length;
 
-        const durations = Array.from({ length: n }, (_, i) =>
-                Array.from({ length: m }, (_, j) => skill[i] * mana[j])
-        );
-        const grid = ensureGrid(input);
+        const durations = buildDurationGrid(skill, mana);
+        const grid = buildDurationGrid(skill, mana);
         const visited = Array.from({ length: n }, () => Array(m).fill(false));
         const dpMatrix = Array.from({ length: n }, () => Array<(number | null)>(m).fill(null));
         const startTimes = Array.from({ length: n }, () => Array<(number | null)>(m).fill(null));
