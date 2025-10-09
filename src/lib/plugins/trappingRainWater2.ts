@@ -1,4 +1,4 @@
-import type { AlgorithmPlugin, Trace, Frame, ValidationResult } from '$lib/types';
+import type { AlgorithmPlugin, Trace, Frame, ValidationResult, FocusMarker } from '$lib/types';
 import type { GridState } from '$lib/types/state';
 
 interface MinHeapNode {
@@ -135,10 +135,14 @@ function trapRainWater2(heightMap: number[][]): Trace<GridState> {
                         water: water.map((row) => [...row]),
                         heap: heap.toArray()
                 },
-                focus: Array.from({ length: m }, (_, i) =>
-                        Array.from({ length: n }, (_, j) =>
-                                i === 0 || i === m - 1 || j === 0 || j === n - 1
-                                        ? { type: 'grid-cell' as const, id: `${i},${j}`, role: 'frontier' }
+		focus: Array.from({ length: m }, (_, i) =>
+			Array.from({ length: n }, (_, j) =>
+				i === 0 || i === m - 1 || j === 0 || j === n - 1
+					? {
+						  type: 'grid-cell' as const,
+						  id: `${i},${j}`,
+						  role: 'frontier' as const
+					  }
                                         : null
                         )
                 )
@@ -157,11 +161,11 @@ function trapRainWater2(heightMap: number[][]): Trace<GridState> {
 	];
 
 	// Process cells from min-heap
-        while (!heap.isEmpty()) {
-                const cell = heap.pop()!;
-                const { row, col, height } = cell;
+		while (!heap.isEmpty()) {
+			const cell = heap.pop()!;
+			const { row, col, height } = cell;
 
-                const neighbors = [];
+			const neighbors: FocusMarker[] = [];
                 const aggregateNotes: string[] = [];
                 const neighborCells: { row: number; col: number; elev: number }[] = [];
 
@@ -197,7 +201,11 @@ function trapRainWater2(heightMap: number[][]): Trace<GridState> {
                                         height: Math.max(height, neighborHeight)
                                 });
 
-                                neighbors.push({ type: 'grid-cell' as const, id: `${newRow},${newCol}`, role: 'frontier' });
+								neighbors.push({
+									type: 'grid-cell' as const,
+									id: `${newRow},${newCol}`,
+									role: 'frontier' as const
+								});
                                 neighborCells.push({ row: newRow, col: newCol, elev: neighborHeight });
                         }
                 }
@@ -214,7 +222,7 @@ function trapRainWater2(heightMap: number[][]): Trace<GridState> {
                         desc += `\n${aggregateNotes.join('\n')}`;
                 }
 
-                frames.push({
+				frames.push({
                         step: step++,
                         state: {
                                 grid: heightMap.map((row) => [...row]),
@@ -222,7 +230,7 @@ function trapRainWater2(heightMap: number[][]): Trace<GridState> {
                                 water: water.map((row) => [...row]),
 				heap: heap.toArray()
 			},
-                        focus: [{ type: 'grid-cell', id: `${row},${col}`, role: 'current' }],
+					focus: [{ type: 'grid-cell' as const, id: `${row},${col}`, role: 'current' as const }],
                         neighbors: neighbors.length > 0 ? neighbors : undefined,
                         globalHighlights: snapshotHighlights(),
                         description: desc,
@@ -252,7 +260,12 @@ function trapRainWater2(heightMap: number[][]): Trace<GridState> {
 		frames,
 		totalSteps: frames.length,
 		completed: true,
-		metadata: { algorithm: 'Trapping Rain Water II', totalWater }
+		metadata: {
+			algorithm: 'Trapping Rain Water II',
+			totalWater,
+			leetcode: 407,
+			leetcodeUrl: 'https://leetcode.com/problems/trapping-rain-water-ii/'
+		}
 	};
 }
 
@@ -266,8 +279,8 @@ export const trappingRainWater2Plugin: AlgorithmPlugin<number[][], GridState> = 
 	visualizationType: 'grid',
 	presets: [
 		{
-			name: 'Small Example',
-			description: '3x6 grid with valleys',
+			name: 'LeetCode Example 1',
+			description: 'Official example height map with answer = 4 units of trapped water',
 			data: [
 				[1, 4, 3, 1, 3, 2],
 				[3, 2, 1, 3, 2, 4],
@@ -275,19 +288,19 @@ export const trappingRainWater2Plugin: AlgorithmPlugin<number[][], GridState> = 
 			]
 		},
 		{
-			name: 'Medium Example',
-			description: '5x5 grid with central depression',
+			name: 'LeetCode Example 2',
+			description: 'Official 5×5 bowl-shaped terrain (answer = 10)',
 			data: [
-				[12, 13, 1, 12, 13],
-				[13, 4, 13, 12, 13],
-				[13, 8, 10, 12, 12],
-				[12, 13, 12, 12, 12],
-				[13, 13, 13, 13, 13]
+				[3, 3, 3, 3, 3],
+				[3, 2, 2, 2, 3],
+				[3, 2, 1, 2, 3],
+				[3, 2, 2, 2, 3],
+				[3, 3, 3, 3, 3]
 			]
 		},
 		{
-			name: 'Large Example',
-			description: '6x8 grid complex terrain',
+			name: 'Complex Terrain Demo',
+			description: '6×8 landscape showcasing varied walls and basins',
 			data: [
 				[5, 5, 5, 5, 5, 5, 5, 5],
 				[5, 1, 1, 1, 1, 1, 1, 5],
@@ -295,6 +308,16 @@ export const trappingRainWater2Plugin: AlgorithmPlugin<number[][], GridState> = 
 				[5, 1, 3, 1, 1, 3, 1, 5],
 				[5, 1, 3, 3, 3, 3, 1, 5],
 				[5, 5, 5, 5, 5, 5, 5, 5]
+			]
+		},
+		{
+			name: 'No Basin Plateau',
+			description: 'Flat interior demonstrates zero trapped water (answer = 0)',
+			data: [
+				[2, 2, 2, 2],
+				[2, 2, 2, 2],
+				[2, 2, 2, 2],
+				[2, 2, 2, 2]
 			]
 		}
 	],

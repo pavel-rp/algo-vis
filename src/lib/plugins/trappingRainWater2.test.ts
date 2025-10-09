@@ -126,6 +126,7 @@ describe('trappingRainWater2Plugin', () => {
 			expect(lastFrame.metrics?.['Total Water']).toBe(4);
 		});
 
+
 		it('should produce frames with grid state', () => {
 			const grid = [
 				[3, 3, 3],
